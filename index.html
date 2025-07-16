@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Now Playing</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(#ffe4ec, #ffc1d3);
+      font-family: 'Kanit', sans-serif;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .circle-image {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 30px;
+      border: 4px solid #fff;
+      animation: spin 20s linear infinite;
+    }
+
+    .circle-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .song-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .artist-name {
+      font-size: 14px;
+      color: #b3b3b3;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      width: 80%;
+      height: 4px;
+      background: #444;
+      border-radius: 2px;
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .progress {
+      width: 30%;
+      height: 100%;
+      background: white;
+      border-radius: 2px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      font-size: 24px;
+      color: white;
+    }
+
+    .controls i {
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    .controls i.play {
+      font-size: 36px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="circle-image">
+    <img src="image1.jpg" alt="cover">
+  </div>
+
+  <div class="song-title">ลองกดเล่นดูมั้ยคะ 💖</div>
+  <div class="artist-name">จากคนที่รักเธอมากที่สุด</div>
+
+  <div class="progress-bar">
+    <div class="progress"></div>
+  </div>
+
+  <div class="controls">
+    <i>⏮</i>
+    <i class="play" onclick="playMusic()">⏵︎</i>
+    <i>⏭</i>
+  </div>
+
+  <audio id="bgMusic" src="music.m4a"></audio>
+
+  <script>
+    function playMusic() {
+      const audio = document.getElementById("bgMusic");
+      audio.play().catch(e => console.log("play error", e));
+    }
+  </script>
+
+</body>
+</html>
