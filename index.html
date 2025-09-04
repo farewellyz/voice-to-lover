@@ -1,117 +1,856 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>Now Playing</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(#ffe4ec, #ffc1d3);
-      font-family: 'Kanit', sans-serif;
-      color: black;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .circle-image {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      overflow: hidden;
-      margin-bottom: 30px;
-      border: 4px solid #fff;
-      animation: spin 20s linear infinite;
-    }
-
-    .circle-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    .song-title {
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    .artist-name {
-      font-size: 14px;
-      color: #b3b3b3;
-      margin-bottom: 20px;
-    }
-
-    .progress-bar {
-      width: 80%;
-      height: 4px;
-      background: #444;
-      border-radius: 2px;
-      position: relative;
-      margin-bottom: 30px;
-    }
-
-    .progress {
-      width: 30%;
-      height: 100%;
-      background: white;
-      border-radius: 2px;
-    }
-
-    .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 25px;
-      font-size: 24px;
-      color: white;
-    }
-
-    .controls i {
-      cursor: default;
-      opacity: 0.6;
-    }
-
-    .controls i.play {
-      font-size: 36px;
-    }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vampire Survivors Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Kanit', sans-serif;
+            touch-action: none;
+            overflow: hidden;
+            background-color: #1a202c;
+            color: white;
+        }
+        canvas {
+            background-color: #0d1117;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        .ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: none; /* Hidden by default */
+            z-index: 20;
+            pointer-events: auto;
+        }
+        .joystick-stick {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            top: 30px;
+            left: 30px;
+        }
+        .modal {
+            pointer-events: auto;
+        }
+        .card {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+        }
+        .card.selected {
+            transform: translateY(-5px) scale(1.05);
+            border-color: #f6e05e; /* yellow-300 */
+            box-shadow: 0 0 20px #f6e05e;
+        }
+        .evolution-card {
+            border-color: #68d391; /* green-400 */
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 15px #68d391; }
+            50% { box-shadow: 0 0 30px #9ae6b4; }
+        }
+        .damage-number {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px black;
+            animation: floatUp 0.7s ease-out forwards;
+            pointer-events: none;
+            z-index: 5;
+        }
+        @keyframes floatUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+        }
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-2px, 2px); }
+            20%, 40%, 60%, 80% { transform: translate(2px, -2px); }
+        }
+        .screen-shake {
+            animation: screenShake 0.3s linear;
+        }
+        .inventory-icon {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #4a5568;
+            background-color: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 10px;
+            position: relative;
+        }
+        .inventory-icon .level-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background-color: #f6e05e;
+            color: black;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            line-height: 18px;
+            text-align: center;
+            border: 1px solid black;
+        }
+    </style>
 </head>
-<body>
+<body class="overscroll-none">
 
-  <div class="circle-image">
-    <img src="image1.jpg" alt="cover">
-  </div>
+    <canvas id="gameCanvas"></canvas>
 
-  <div class="song-title">ลองกดเล่นดูมั้ยคะ 💖</div>
-  <div class="artist-name">จากคนที่รักเธอมากที่สุด</div>
+    <!-- UI Elements -->
+    <div id="uiContainer" class="ui-container p-4 flex flex-col justify-between">
+        <!-- Top UI -->
+        <div class="flex justify-between items-start text-lg">
+            <div id="timer" class="bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg font-bold">เวลา: 00:00</div>
+            <div id="inventoryDisplay" class="flex flex-col items-end gap-2">
+                 <div id="weaponIcons" class="flex gap-1"></div>
+                 <div id="passiveIcons" class="flex gap-1"></div>
+            </div>
+            <div id="level" class="bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg">เลเวล: 1</div>
+        </div>
 
-  <div class="progress-bar">
-    <div class="progress"></div>
-  </div>
+        <!-- Bottom UI -->
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-full max-w-sm bg-gray-700 rounded-full h-6 border-2 border-gray-500">
+                <div id="healthBar" class="bg-red-500 h-full rounded-full transition-all duration-300"></div>
+            </div>
+            <div id="healthText" class="font-semibold">100 / 100</div>
+            <div class="w-full max-w-sm bg-gray-700 rounded-full h-4 border-2 border-gray-500">
+                <div id="xpBar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="joystickBase" class="joystick-base">
+        <div id="joystickStick" class="joystick-stick"></div>
+    </div>
+    
+    <div id="damageNumbersContainer"></div>
 
-  <div class="controls">
-    <i>⏮</i>
-    <i class="play" onclick="playMusic()">⏵︎</i>
-    <i>⏭</i>
-  </div>
+    <!-- Start Screen Modal -->
+    <div id="startScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex flex-col justify-center items-center z-30">
+        <h1 class="text-5xl md:text-6xl font-bold mb-8 text-yellow-300">เลือกผู้รอดชีวิต</h1>
+        <div id="characterSelection" class="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 mb-8">
+            <!-- Character cards will be inserted here -->
+        </div>
+        <button id="startButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-lg text-2xl shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>เริ่มเกม</button>
+    </div>
 
-  <audio id="bgMusic" src="music.m4a"></audio>
+    <!-- Level Up Modal -->
+    <div id="levelUpScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex-col justify-center items-center z-30 hidden">
+        <h2 class="text-5xl font-bold mb-8 text-yellow-300">เลเวลอัป!</h2>
+        <div id="upgradeOptions" class="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
+            <!-- Upgrade cards will be inserted here -->
+        </div>
+    </div>
 
-  <script>
-    function playMusic() {
-      const audio = document.getElementById("bgMusic");
-      audio.play().catch(e => console.log("play error", e));
+    <!-- Game Over Modal -->
+    <div id="gameOverScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex-col justify-center items-center z-30 hidden">
+        <h2 class="text-6xl font-bold mb-4 text-red-500">เกมจบแล้ว</h2>
+        <p class="text-2xl mb-2">คุณเอาชีวิตรอดได้: <span id="survivalTime" class="font-bold"></span></p>
+        <p class="text-xl mb-8">ศัตรูที่กำจัดได้: <span id="enemiesKilled" class="font-bold"></span></p>
+        <button id="restartButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-lg text-2xl shadow-lg">เล่นอีกครั้ง</button>
+    </div>
+
+<script>
+    // --- Setup ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const uiContainer = document.getElementById('uiContainer');
+    const damageNumbersContainer = document.getElementById('damageNumbersContainer');
+    const healthBar = document.getElementById('healthBar');
+    const healthText = document.getElementById('healthText');
+    const xpBar = document.getElementById('xpBar');
+    const levelText = document.getElementById('level');
+    const timerText = document.getElementById('timer');
+    const startScreen = document.getElementById('startScreen');
+    const levelUpScreen = document.getElementById('levelUpScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const startButton = document.getElementById('startButton');
+    const restartButton = document.getElementById('restartButton');
+    const joystickBase = document.getElementById('joystickBase');
+    const joystickStick = document.getElementById('joystickStick');
+    const weaponIconsContainer = document.getElementById('weaponIcons');
+    const passiveIconsContainer = document.getElementById('passiveIcons');
+
+
+    let canvasWidth = window.innerWidth;
+    let canvasHeight = window.innerHeight;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    let gameState = 'start';
+    let gameTime = 0;
+    let enemiesKilledCount = 0;
+    let animationFrameId;
+    let selectedCharacterId = null;
+    let nextBossTime = 300; // 5 minutes
+
+    // --- Player ---
+    const player = {
+        x: canvasWidth / 2, y: canvasHeight / 2, radius: 15,
+        color: '#FFFFFF', hp: 100, maxHp: 100, xp: 0, level: 1,
+        xpToNextLevel: 10, lastHitTime: 0, isInvincible: false,
+        passives: [],
+        stats: {
+            speed: 3,
+            damageModifier: 1.0,
+            cooldownModifier: 1.0,
+            projectileSpeedModifier: 1.0,
+            damageReduction: 0
+        }
+    };
+
+    // --- Master Lists ---
+    const WEAPONS_MASTER_LIST = {
+        whip: { name: "แส้", icon: "〰️", type: 'horizontal', damage: 15, count: 1, range: 1.0, duration: 200, cooldown: 1500, lastAttackTime: 0, projectiles: [], maxLevel: 10 },
+        lightning: { name: "พลังสายฟ้า", icon: "⚡️", type: 'orbital', damage: 12, count: 1, speed: 0.035, range: 80, angle: 0, projectiles: [], maxLevel: 10 },
+        axe: { name: "ขวาน", icon: "🪓", type: 'arc', damage: 25, count: 1, speed: 7, range: 1.0, cooldown: 2000, lastAttackTime: 0, projectiles: [], maxLevel: 10 },
+        garlic: { name: "ออร่ากระเทียม", icon: "🧄", type: 'aura', damage: 5, count: 1, range: 100, cooldown: 500, lastAttackTime: 0, lastHit: new Map(), projectiles: [], maxLevel: 10 },
+        missile: { name: "กระสุนเวทนำวิถี", icon: "✨", type: 'homing', damage: 20, count: 1, speed: 6, cooldown: 1800, lastAttackTime: 0, projectiles: [], maxLevel: 10 }
+    };
+    const PASSIVES_MASTER_LIST = {
+        spinach: { name: "ผักโขม", icon: "🥬", description: "เพิ่มพลังโจมตี 10% ต่อเลเวล", maxLevel: 5, apply: (p, level) => { p.stats.damageModifier = 1 + (0.1 * level); } },
+        armor: { name: "เกราะ", icon: "🛡️", description: "ลดความเสียหายที่ได้รับ 5% ต่อเลเวล", maxLevel: 5, apply: (p, level) => { p.stats.damageReduction = 1 - Math.pow(0.95, level); } },
+        wings: { name: "ปีก", icon: "🕊️", description: "เพิ่มความเร็วเคลื่อนที่ 10% ต่อเลเวล", maxLevel: 5, apply: (p, level) => { p.stats.speed = 3 * (1 + (0.1 * level)); } },
+        tome: { name: "ตำรา", icon: "📖", description: "ลดคูลดาวน์ 8% ต่อเลเวล", maxLevel: 5, apply: (p, level) => { p.stats.cooldownModifier = 1 - (0.08 * level); } },
+        candelabrador: { name: "เชิงเทียน", icon: "🕯️", description: "เพิ่มความเร็วโปรเจคไทล์ 10%", maxLevel: 5, apply: (p, level) => { p.stats.projectileSpeedModifier = 1 + (0.1 * level); } }
+    };
+    const EVOLUTIONS = {
+        bloody_tear: { name: "แส้โลหิต", icon: "🩸", baseWeaponId: 'whip', passiveId: 'spinach', evolvedWeapon: { name: "แส้โลหิต", type: 'horizontal', damage: 40, count: 1, range: 1.2, duration: 250, cooldown: 1300, lastAttackTime: 0, projectiles: [], isEvolved: true, lifestealChance: 0.1 } },
+        thunder_loop: { name: "วงแหวนอัสนี", icon: "🌀", baseWeaponId: 'lightning', passiveId: 'wings', evolvedWeapon: { name: "วงแหวนอัสนี", type: 'evo_orbital_ring', damage: 25, range: 150, cooldown: 250, lastAttackTime: 0, lastHit: new Map(), projectiles: [], isEvolved: true } },
+        death_spiral: { name: "เกลียวมรณะ", icon: "💀", baseWeaponId: 'axe', passiveId: 'candelabrador', evolvedWeapon: { name: "เกลียวมรณะ", type: 'evo_spiral', damage: 60, count: 8, speed: 6, cooldown: 2500, lastAttackTime: 0, projectiles: [], isEvolved: true } },
+        soul_eater: { name: "เครื่องดูดวิญญาณ", icon: "👻", baseWeaponId: 'garlic', passiveId: 'armor', evolvedWeapon: { name: "เครื่องดูดวิญญาณ", type: 'aura', damage: 20, range: 150, cooldown: 300, lastAttackTime: 0, lastHit: new Map(), projectiles: [], isEvolved: true, lifestealOnKillChance: 0.05 } },
+        thousand_edge: { name: "พันศาสตรา", icon: "🗡️", baseWeaponId: 'missile', passiveId: 'tome', evolvedWeapon: { name: "พันศาสตรา", type: 'evo_stream', damage: 25, speed: 8, cooldown: 100, lastAttackTime: 0, projectiles: [], isEvolved: true } }
+    };
+    
+    let weapons = [];
+    let difficultyManager = {};
+
+    // --- Characters ---
+    const CHARACTERS = [
+        { id: 'mage', name: 'นักเวทย์', description: 'เริ่มต้นด้วยพลังสายฟ้า', color: '#63b3ed', startingWeaponId: 'lightning' },
+        { id: 'knight', name: 'อัศวิน', description: 'เริ่มต้นด้วยแส้', color: '#a0aec0', startingWeaponId: 'whip' },
+        { id: 'barbarian', name: 'คนเถื่อน', description: 'เริ่มต้นด้วยขวาน', color: '#f6ad55', startingWeaponId: 'axe' }
+    ];
+
+    let enemies = [];
+    let xpGems = [];
+    let pickups = [];
+    const keys = {};
+    const joystick = { active: false, baseX: 0, baseY: 0, stickX: 0, stickY: 0, dx: 0, dy: 0 };
+    
+    // --- UI Functions ---
+    function updateInventoryUI() {
+        weaponIconsContainer.innerHTML = '';
+        passiveIconsContainer.innerHTML = '';
+        weapons.forEach(w => {
+            const master = w.isEvolved ? EVOLUTIONS[w.id] : WEAPONS_MASTER_LIST[w.id];
+            const iconEl = document.createElement('div');
+            iconEl.className = 'inventory-icon rounded-md';
+            iconEl.innerHTML = `${master.icon}<div class="level-badge">${w.isEvolved ? 'MAX' : w.level}</div>`;
+            weaponIconsContainer.appendChild(iconEl);
+        });
+        player.passives.forEach(p => {
+            const master = PASSIVES_MASTER_LIST[p.id];
+            const iconEl = document.createElement('div');
+            iconEl.className = 'inventory-icon rounded-md';
+            iconEl.innerHTML = `${master.icon}<div class="level-badge">${p.level}</div>`;
+            passiveIconsContainer.appendChild(iconEl);
+        });
     }
-  </script>
 
+    // --- Character Selection ---
+    function populateCharacterSelection() {
+        const container = document.getElementById('characterSelection');
+        container.innerHTML = '';
+        CHARACTERS.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'card bg-gray-800 border-4 border-gray-600 p-4 rounded-lg text-center';
+            card.dataset.charId = char.id;
+            card.innerHTML = `<div class="w-16 h-16 rounded-full mx-auto mb-4" style="background-color: ${char.color};"></div><h3 class="text-2xl font-bold text-yellow-300 mb-2">${char.name}</h3><p class="text-gray-300 text-sm">${char.description}</p>`;
+            card.addEventListener('click', () => { selectedCharacterId = char.id; document.querySelectorAll('#characterSelection .card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); startButton.disabled = false; });
+            container.appendChild(card);
+        });
+    }
+
+    // --- Upgrade System ---
+    function getWeaponUpgradeDescription(weapon) {
+        const nextLevel = weapon.level + 1;
+        switch (weapon.id) {
+            case 'whip':
+                if (nextLevel === 3 || nextLevel === 5 || nextLevel === 7 || nextLevel === 10) return `เพิ่มแส้เป็น ${weapon.count + 1} เส้น`;
+                if (nextLevel === 8) return `เพิ่มระยะและความแรงอย่างมาก`;
+                return `เพิ่มพลังโจมตี`;
+            case 'lightning':
+                if (nextLevel === 3 || nextLevel === 6 || nextLevel === 9) return `เพิ่มจำนวนเป็น ${weapon.count + 1} ลูก`;
+                return `เพิ่มพลังโจมตีและระยะ`;
+            case 'axe':
+                if (nextLevel === 3 || nextLevel === 6 || nextLevel === 9) return `เพิ่มขวานเป็น ${weapon.count + 1} ชิ้น`;
+                return `เพิ่มพลังโจมตีและลดคูลดาวน์`;
+            case 'garlic':
+                return `เพิ่มพลังโจมตีและขยายขอบเขต`;
+            case 'missile':
+                 if (nextLevel % 2 === 0) return `เพิ่มจำนวนกระสุนเป็น ${weapon.count + 1} ลูก`;
+                 return `เพิ่มพลังโจมตี`;
+            default: return `เพิ่มประสิทธิภาพของอาวุธ`;
+        }
+    }
+
+    function upgradeWeapon(weapon) {
+        weapon.level++;
+        const level = weapon.level;
+        switch (weapon.id) {
+            case 'whip': weapon.damage += 5; if (level === 3 || level === 5 || level === 7 || level === 10) weapon.count++; if (level === 8) weapon.range *= 1.25; break;
+            case 'lightning': weapon.damage += 3; if (level === 3 || level === 6 || level === 9) weapon.count++; weapon.range += 10; break;
+            case 'axe': weapon.damage += 8; if (level === 3 || level === 6 || level === 9) weapon.count++; weapon.cooldown *= 0.95; break;
+            case 'garlic': weapon.damage += 2; weapon.range += 15; weapon.cooldown *= 0.9; break;
+            case 'missile': weapon.damage += 5; if (level % 2 === 0) weapon.count++; weapon.cooldown *= 0.95; break;
+        }
+    }
+
+    function getUpgradeOptions() {
+        // Evolution Check: Weapon at Lv. 8, Passive at Max Lv. 5
+        for (const evoKey in EVOLUTIONS) {
+            const evo = EVOLUTIONS[evoKey];
+            const weapon = weapons.find(w => w.id === evo.baseWeaponId && w.level === 8);
+            const passive = player.passives.find(p => p.id === evo.passiveId && p.level === PASSIVES_MASTER_LIST[p.id].maxLevel);
+            if (weapon && passive) {
+                return [{ id: `evolve_${weapon.id}`, isEvolution: true, name: `วิวัฒนาการ: ${evo.name}`, description: evo.description,
+                    apply: () => {
+                        const weaponIndex = weapons.findIndex(w => w.id === evo.baseWeaponId);
+                        if (weaponIndex !== -1) {
+                            const oldWeapon = weapons[weaponIndex];
+                            const evolved = JSON.parse(JSON.stringify(evo.evolvedWeapon));
+                            evolved.id = evoKey; evolved.level = oldWeapon.level; evolved.count = oldWeapon.count;
+                            if (evolved.type === 'aura' || evolved.type === 'evo_orbital_ring') { evolved.lastHit = new Map(); }
+                            weapons[weaponIndex] = evolved;
+                        }
+                    }
+                }];
+            }
+        }
+
+        const upgrades = [];
+        weapons.forEach((w) => {
+            if (w.level < w.maxLevel && !w.isEvolved) {
+                upgrades.push({ id: `${w.id}_level`, name: `อัปเกรด ${w.name} (Lv. ${w.level + 1})`, description: getWeaponUpgradeDescription(w), apply: () => upgradeWeapon(w) });
+            }
+        });
+        player.passives.forEach((p) => {
+            const master = PASSIVES_MASTER_LIST[p.id];
+            if (p.level < master.maxLevel) {
+                upgrades.push({ id: `${p.id}_level`, name: `อัปเกรด ${master.name} (Lv. ${p.level + 1})`, description: master.description, apply: () => { p.level++; master.apply(player, p.level); } });
+            }
+        });
+
+        if (weapons.length < 4) {
+            const currentWeaponIds = weapons.map(w => w.id);
+            const availableNewWeapons = Object.keys(WEAPONS_MASTER_LIST).filter(id => !currentWeaponIds.includes(id));
+            if (availableNewWeapons.length > 0) {
+                const newId = availableNewWeapons[Math.floor(Math.random() * availableNewWeapons.length)];
+                upgrades.push({ id: `new_${newId}`, name: `รับอาวุธ: ${WEAPONS_MASTER_LIST[newId].name}`, description: 'เพิ่มอาวุธใหม่', apply: () => { const inst = JSON.parse(JSON.stringify(WEAPONS_MASTER_LIST[newId])); inst.id = newId; inst.level = 1; if(inst.type==='aura') inst.lastHit=new Map(); weapons.push(inst); } });
+            }
+        }
+        if (player.passives.length < 4) {
+             const currentPassiveIds = player.passives.map(p => p.id);
+             const availableNewPassives = Object.keys(PASSIVES_MASTER_LIST).filter(id => !currentPassiveIds.includes(id));
+             if (availableNewPassives.length > 0) {
+                 const newId = availableNewPassives[Math.floor(Math.random() * availableNewPassives.length)];
+                 const master = PASSIVES_MASTER_LIST[newId];
+                 upgrades.push({ id: `new_${newId}`, name: `รับไอเทม: ${master.name}`, description: master.description, apply: () => { player.passives.push({id: newId, level: 1}); master.apply(player, 1); } });
+             }
+        }
+        
+        const shuffled = upgrades.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 3);
+    }
+
+    function displayUpgradeOptions(options) {
+        const container = document.getElementById('upgradeOptions');
+        container.innerHTML = '';
+        if (options.length === 0) {
+            options = [{ id: 'heal_small', name: 'พักหายใจ', description: 'ฟื้นฟู HP 20 หน่วย', apply: () => { player.hp = Math.min(player.maxHp, player.hp + 20); } }];
+        }
+        options.forEach(upgrade => {
+            const card = document.createElement('div');
+            const cardClasses = 'card bg-gray-800 border-2 border-yellow-400 p-6 rounded-lg text-center';
+            card.className = upgrade.isEvolution ? `${cardClasses} evolution-card` : cardClasses;
+            card.innerHTML = `<h3 class="text-2xl font-bold text-yellow-300 mb-2">${upgrade.name}</h3><p class="text-gray-300">${upgrade.description}</p>`;
+            card.onclick = () => selectUpgrade(upgrade);
+            container.appendChild(card);
+        });
+    }
+
+    function selectUpgrade(upgrade) {
+        upgrade.apply();
+        updateInventoryUI();
+        levelUpScreen.classList.add('hidden');
+        levelUpScreen.classList.remove('flex');
+        gameState = 'playing';
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+    }
+    
+    // --- Event Listeners and Controls ---
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    window.addEventListener('keydown', (e) => keys[e.code] = true);
+    window.addEventListener('keyup', (e) => keys[e.code] = false);
+    function handlePointerDown(e) { if (gameState !== 'playing') return; joystick.active = true; const pos = e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY }; joystick.baseX = joystick.stickX = pos.x; joystick.baseY = joystick.stickY = pos.y; joystickBase.style.display = 'block'; joystickBase.style.left = `${joystick.baseX - 60}px`; joystickBase.style.top = `${joystick.baseY - 60}px`; }
+    function handlePointerMove(e) { if (!joystick.active) return; const pos = e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY }; const dx = pos.x - joystick.baseX; const dy = pos.y - joystick.baseY; const distance = Math.sqrt(dx * dx + dy * dy); const maxDistance = 60; if (distance > maxDistance) { joystick.stickX = joystick.baseX + (dx / distance) * maxDistance; joystick.stickY = joystick.baseY + (dy / distance) * maxDistance; } else { joystick.stickX = pos.x; joystick.stickY = pos.y; } joystick.dx = (joystick.stickX - joystick.baseX) / maxDistance; joystick.dy = (joystick.stickY - joystick.baseY) / maxDistance; joystickStick.style.transform = `translate(${joystick.stickX - joystick.baseX}px, ${joystick.stickY - joystick.baseY}px)`; }
+    function handlePointerUp(e) { joystick.active = false; joystick.dx = 0; joystick.dy = 0; joystickBase.style.display = 'none'; joystickStick.style.transform = 'translate(0, 0)'; }
+    canvas.addEventListener('touchstart', handlePointerDown); canvas.addEventListener('touchmove', handlePointerMove); canvas.addEventListener('touchend', handlePointerUp); canvas.addEventListener('mousedown', handlePointerDown); canvas.addEventListener('mousemove', handlePointerMove); canvas.addEventListener('mouseup', handlePointerUp); canvas.addEventListener('mouseleave', handlePointerUp);
+
+    // --- Game Logic ---
+    function updatePlayer() {
+        let dx = joystick.dx; let dy = joystick.dy;
+        if (keys['KeyW'] || keys['ArrowUp']) dy = -1; if (keys['KeyS'] || keys['ArrowDown']) dy = 1; if (keys['KeyA'] || keys['ArrowLeft']) dx = -1; if (keys['KeyD'] || keys['ArrowRight']) dx = 1;
+        if (dx !== 0 && dy !== 0) { const len = Math.sqrt(dx * dx + dy * dy); dx /= len; dy /= len; }
+        if (dx !== 0 || dy !== 0) { player.x += dx * player.stats.speed; player.y += dy * player.stats.speed; }
+        player.x = Math.max(player.radius, Math.min(window.innerWidth - player.radius, player.x)); player.y = Math.max(player.radius, Math.min(window.innerHeight - player.radius, player.y));
+        if (player.isInvincible && Date.now() - player.lastHitTime > 1000) player.isInvincible = false;
+    }
+    
+    function getEnemyColor(timeMinutes) {
+        const hue = 0; // Red
+        const saturation = Math.min(100, 70 + timeMinutes * 5);
+        const lightness = Math.max(30, 50 - timeMinutes * 3);
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    function getXPGemColor(value) {
+        if (value >= 20) return '#a21caf'; // Fuchsia 700
+        if (value >= 10) return '#facc15'; // Yellow 400
+        if (value >= 5) return '#4ade80'; // Green 400
+        return '#60a5fa'; // Blue 400
+    }
+
+    function spawnEnemy() {
+        const side = Math.floor(Math.random() * 4); let x, y;
+        if (side === 0) { x = Math.random() * canvas.width; y = -20; } else if (side === 1) { x = canvas.width + 20; y = Math.random() * canvas.height; } else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 20; } else { x = -20; y = Math.random() * canvas.height; }
+        const type = Math.random() > 0.8 ? 'fast' : 'normal';
+        const timeMinutes = gameTime / 60;
+        const hp = (type==='fast'? 8 : 12) * difficultyManager.enemyHpMultiplier;
+        const speed = (type==='fast'? 2 : 1.2) * difficultyManager.enemySpeedMultiplier;
+        const xpValue = (type === 'fast' ? 3 : 1) + Math.floor(timeMinutes);
+        enemies.push({ id: `e-${Date.now()}-${Math.random()}`, type: type, x, y, radius: type==='fast'?10:15, hp: hp, maxHp: hp, speed: speed, color: getEnemyColor(timeMinutes), xpValue: xpValue });
+    }
+
+    function spawnHealthEnemy() {
+        const side = Math.floor(Math.random() * 4); let x, y;
+        if (side === 0) { x = Math.random() * canvas.width; y = -30; } else if (side === 1) { x = canvas.width + 30; y = Math.random() * canvas.height; } else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 30; } else { x = -30; y = Math.random() * canvas.height; }
+        const hp = 25 * difficultyManager.enemyHpMultiplier;
+        const speed = 1.5 * difficultyManager.enemySpeedMultiplier;
+        enemies.push({ id: `h-${Date.now()}`, type: 'health', x, y, radius: 18, hp: hp, maxHp: hp, speed: speed, color: '#2dd4bf', xpValue: 5, isHealthDropper: true });
+    }
+
+    function spawnBoss() {
+        const side = Math.floor(Math.random() * 4); let x, y;
+        if (side === 0) { x = Math.random() * canvas.width; y = -50; } else if (side === 1) { x = canvas.width + 50; y = Math.random() * canvas.height; } else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 50; } else { x = -50; y = Math.random() * canvas.height; }
+        const bossLevel = Math.floor(gameTime / 300) + 1;
+        const hp = 500 * bossLevel * difficultyManager.enemyHpMultiplier;
+        enemies.push({ id: `b-${Date.now()}`, type: 'boss', x, y, radius: 40, hp: hp, maxHp: hp, speed: 1.5 * difficultyManager.enemySpeedMultiplier, color: '#44337a', xpValue: 100, isBoss: true });
+    }
+
+    function updateEnemies() {
+        enemies.forEach(enemy => {
+            const dx = player.x - enemy.x; const dy = player.y - enemy.y; const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist > 0) { enemy.x += (dx / dist) * enemy.speed; enemy.y += (dy / dist) * enemy.speed; }
+            if (!player.isInvincible && dist < player.radius + enemy.radius) {
+                const damageTaken = (enemy.isBoss ? 25 : (enemy.isHealthDropper ? 15: 10)) * (1 - player.stats.damageReduction);
+                player.hp -= damageTaken; player.isInvincible = true; player.lastHitTime = Date.now();
+                uiContainer.classList.add('screen-shake');
+                setTimeout(() => uiContainer.classList.remove('screen-shake'), 300);
+                if (player.hp <= 0) gameOver();
+            }
+        });
+    }
+
+    function updateWeapons() {
+        weapons.forEach(w => {
+            const cooldown = w.cooldown * player.stats.cooldownModifier;
+            const speed = (w.speed || 0) * player.stats.projectileSpeedModifier;
+
+            if (w.type === 'orbital') {
+                w.angle = (w.angle + w.speed) % (Math.PI * 2); w.projectiles = []; const angleInc = (2 * Math.PI) / w.count;
+                for (let i = 0; i < w.count; i++) { const angle = w.angle + i * angleInc; w.projectiles.push({ x: player.x + Math.cos(angle) * w.range, y: player.y + Math.sin(angle) * w.range, radius: 10, lastHit: new Map() }); }
+            } else if (w.type === 'horizontal' && Date.now() - w.lastAttackTime > cooldown) {
+                w.lastAttackTime = Date.now(); w.projectiles = [];
+                for (let i = 0; i < w.count; i++) { const yOffset = (i - Math.floor((w.count-1)/2)) * 15; w.projectiles.push({ x: player.x, y: player.y + yOffset, width: 80 * w.range, height: 10, spawnTime: Date.now(), lastHit: new Map(), side: 'left' }); w.projectiles.push({ x: player.x, y: player.y + yOffset, width: 80 * w.range, height: 10, spawnTime: Date.now(), lastHit: new Map(), side: 'right' }); }
+            } else if (w.type === 'arc' && Date.now() - w.lastAttackTime > cooldown) {
+                 w.lastAttackTime = Date.now();
+                 for (let i = 0; i < w.count; i++) w.projectiles.push({ x: player.x, y: player.y, vy: -speed, vx: (i * 2 + (Math.random()-0.5)) * (Math.random() > 0.5 ? 1 : -1) * 2, gravity: 0.15, angle: 0, rotationSpeed: 0.2 * (Math.random() > 0.5 ? 1 : -1), lastHit: new Map() });
+            } else if (w.type === 'homing' && Date.now() - w.lastAttackTime > cooldown) {
+                w.lastAttackTime = Date.now();
+                let targets = [...enemies].sort((a,b) => Math.hypot(player.x-a.x, player.y-a.y) - Math.hypot(player.x-b.x, player.y-b.y));
+                for(let i=0; i < w.count && i < targets.length; i++){ w.projectiles.push({x:player.x, y:player.y, speed: speed, target: targets[i], lastHit: new Map()}); }
+            } else if (w.type === 'evo_spiral' && Date.now() - w.lastAttackTime > cooldown) {
+                w.lastAttackTime = Date.now();
+                for (let i = 0; i < w.count; i++) {
+                    const angle = (i / w.count) * Math.PI * 2;
+                    w.projectiles.push({ x: player.x, y: player.y, vy: Math.sin(angle) * speed, vx: Math.cos(angle) * speed, gravity: 0, angle: 0, rotationSpeed: 0.3, lastHit: new Map(), spawnTime: Date.now() });
+                }
+            } else if (w.type === 'evo_stream' && Date.now() - w.lastAttackTime > cooldown) {
+                w.lastAttackTime = Date.now();
+                let target = enemies.sort((a,b) => Math.hypot(player.x-a.x, player.y-a.y) - Math.hypot(player.x-b.x, player.y-b.y))[0];
+                if(target) w.projectiles.push({x:player.x, y:player.y, speed: speed, target: target, lastHit: new Map()});
+            }
+
+            w.projectiles.forEach((p, index) => {
+                if (w.type === 'horizontal' && Date.now() - p.spawnTime > w.duration) w.projectiles.splice(index, 1);
+                if (w.type === 'arc') { p.vy += p.gravity; p.y += p.vy; p.x += p.vx; p.angle += p.rotationSpeed; if (p.y > canvas.height + 50) w.projectiles.splice(index, 1); }
+                if (w.type === 'homing' || w.type === 'evo_stream') {
+                    if (p.target && p.target.hp > 0) { const dx = p.target.x - p.x; const dy = p.target.y - p.y; const dist = Math.hypot(dx,dy); if(dist > 0) {p.x += (dx/dist)*p.speed; p.y += (dy/dist)*p.speed;} } else { p.y -= p.speed; }
+                    if (p.y < -20 || p.x < -20 || p.x > canvas.width + 20) w.projectiles.splice(index, 1);
+                }
+                if (w.type === 'evo_spiral') { p.y += p.vy; p.x += p.vx; p.angle += p.rotationSpeed; if (Date.now() - p.spawnTime > 3000) w.projectiles.splice(index, 1); }
+            });
+        });
+    }
+    
+    function updatePickups() {
+        pickups.forEach((pickup, index) => {
+             const dx = player.x - pickup.x; const dy = player.y - pickup.y; const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < player.radius + pickup.radius) {
+                if (pickup.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + 20); }
+                pickups.splice(index, 1);
+            }
+        });
+    }
+
+    function updateXPGems() {
+        xpGems.forEach((gem, index) => {
+            const dx = player.x - gem.x; const dy = player.y - gem.y; const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < player.radius + gem.radius) { player.xp += gem.value; checkLevelUp(); xpGems.splice(index, 1); } 
+            else if (dist < 100) { gem.x += (dx / dist) * 5; gem.y += (dy / dist) * 5; }
+        });
+    }
+    
+    function checkCollisions() {
+        weapons.forEach(w => {
+            const damage = w.damage * player.stats.damageModifier;
+            const cooldown = w.cooldown * player.stats.cooldownModifier;
+
+            if((w.type === 'aura' || w.type === 'evo_orbital_ring') && Date.now() - w.lastAttackTime > cooldown) {
+                w.lastAttackTime = Date.now();
+                enemies.forEach(enemy => {
+                    const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+                    if (dist < w.range + enemy.radius && (!w.lastHit.has(enemy.id) || Date.now() - w.lastHit.get(enemy.id) > cooldown)) {
+                        w.lastHit.set(enemy.id, Date.now()); enemy.hp -= damage; createDamageNumber(enemy.x, enemy.y, damage);
+                    }
+                });
+            }
+            w.projectiles.forEach(p => {
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    const enemy = enemies[i]; let hit = false;
+                    if (w.type === 'orbital' || w.type === 'homing' || w.type === 'evo_stream') { const d = Math.hypot(p.x - enemy.x, p.y - enemy.y); if (d < 12 + enemy.radius) hit = true; }
+                    else if (w.type === 'horizontal') { const rectX = p.side === 'left' ? p.x - p.width - player.radius : p.x + player.radius; if (enemy.x > Math.min(rectX, rectX+p.width) && enemy.x < Math.max(rectX, rectX+p.width) && enemy.y > p.y - p.height / 2 && enemy.y < p.y + p.height / 2) hit = true; }
+                    else if (w.type === 'arc' || w.type === 'evo_spiral') { const d = Math.hypot(p.x - enemy.x, p.y - enemy.y); if (d < 15 + enemy.radius) hit = true; }
+                    if (hit && (!p.lastHit.has(enemy.id) || Date.now() - p.lastHit.get(enemy.id) > 500)) {
+                        p.lastHit.set(enemy.id, Date.now()); enemy.hp -= damage; createDamageNumber(enemy.x, enemy.y, damage);
+                        if (w.lifestealChance && Math.random() < w.lifestealChance) { player.hp = Math.min(player.maxHp, player.hp + 1); }
+                    }
+                }
+            });
+        });
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const enemy = enemies[i];
+            if (enemy.hp <= 0) {
+                if (enemy.isHealthDropper) {
+                    pickups.push({type: 'health', x: enemy.x, y: enemy.y, radius: 10});
+                } else if (enemy.isBoss) { 
+                    for(let j = 0; j < 20; j++) { const angle = (j / 20) * Math.PI * 2; xpGems.push({x: enemy.x + Math.cos(angle)*30, y: enemy.y + Math.sin(angle)*30, radius: 8, value: 50, color: getXPGemColor(50)}); }
+                } else {
+                    const soulEater = weapons.find(w => w.id === 'soul_eater');
+                    if(soulEater && Math.hypot(player.x - enemy.x, player.y - enemy.y) < soulEater.range && soulEater.lifestealOnKillChance && Math.random() < soulEater.lifestealOnKillChance) {
+                        player.hp = Math.min(player.maxHp, player.hp + 1);
+                    }
+                    xpGems.push({x: enemy.x, y: enemy.y, radius: 5, value: enemy.xpValue, color: getXPGemColor(enemy.xpValue)});
+                }
+                enemies.splice(i, 1); enemiesKilledCount++;
+            }
+        }
+    }
+    
+    function createDamageNumber(x, y, amount) { const el = document.createElement('div'); el.className = 'damage-number'; el.textContent = Math.round(amount); el.style.left = `${x}px`; el.style.top = `${y}px`; damageNumbersContainer.appendChild(el); setTimeout(() => el.remove(), 700); }
+
+    function checkLevelUp() {
+        while (player.xp >= player.xpToNextLevel) {
+            player.level++;
+            player.xp -= player.xpToNextLevel;
+            player.xpToNextLevel = Math.floor(player.xpToNextLevel * 1.2 + 20); // ปรับการเพิ่ม XP ที่ต้องการให้นุ่มนวลขึ้น
+            
+            // เพิ่ม HP สูงสุดและฟื้นฟูเล็กน้อยเมื่อเลเวลอัป
+            player.maxHp += 5;
+            player.hp = Math.min(player.maxHp, player.hp + 5);
+
+            gameState = 'levelUp';
+            const options = getUpgradeOptions();
+            displayUpgradeOptions(options);
+            levelUpScreen.classList.remove('hidden');
+            levelUpScreen.classList.add('flex');
+            cancelAnimationFrame(animationFrameId);
+        }
+    }
+    
+    // --- Drawing ---
+    function drawPlayer(p) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(0, p.radius, p.radius, p.radius * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body
+        ctx.fillStyle = p.isInvincible ? 'rgba(255, 255, 255, 0.5)' : p.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, p.radius, Math.PI, 0); // Top semi-circle
+        ctx.rect(-p.radius, 0, p.radius * 2, p.radius * 0.8); // Body rectangle
+        ctx.fill();
+
+        // Feet
+        ctx.beginPath();
+        const feetWidth = p.radius * 0.4;
+        ctx.rect(-p.radius * 0.8, p.radius * 0.8, feetWidth, p.radius * 0.4); // Left foot
+        ctx.rect(p.radius * 0.4, p.radius * 0.8, feetWidth, p.radius * 0.4); // Right foot
+        ctx.fill();
+        
+        // Visor
+        ctx.fillStyle = '#ADD8E6'; // Light blue
+        ctx.beginPath();
+        ctx.ellipse(0, -p.radius * 0.1, p.radius * 0.7, p.radius * 0.35, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Visor highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.beginPath();
+        ctx.ellipse(-p.radius * 0.1, -p.radius * 0.2, p.radius * 0.2, p.radius * 0.1, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    function drawEnemy(e) {
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(0, e.radius, e.radius * 0.9, e.radius * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        const time = Date.now();
+        const wingFlap = Math.sin(time / 100) * (e.radius * 0.3);
+
+        // Body
+        ctx.fillStyle = e.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, e.radius * 0.7, e.radius, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Wings
+        ctx.beginPath();
+        ctx.moveTo(0, -e.radius * 0.5);
+        ctx.quadraticCurveTo(-e.radius * 1.5, -e.radius * 0.5 + wingFlap, -e.radius * 0.8, e.radius * 0.5);
+        ctx.quadraticCurveTo(-e.radius * 0.5, e.radius * 0.2, 0, -e.radius * 0.5);
+        ctx.moveTo(0, -e.radius * 0.5);
+        ctx.quadraticCurveTo(e.radius * 1.5, -e.radius * 0.5 + wingFlap, e.radius * 0.8, e.radius * 0.5);
+        ctx.quadraticCurveTo(e.radius * 0.5, e.radius * 0.2, 0, -e.radius * 0.5);
+        ctx.fill();
+        
+        // Eyes
+        ctx.fillStyle = e.isHealthDropper ? '#ef4444' : 'white';
+        ctx.beginPath();
+        ctx.arc(-e.radius * 0.2, -e.radius * 0.1, 2, 0, Math.PI * 2);
+        ctx.arc(e.radius * 0.2, -e.radius * 0.1, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (e.isBoss) {
+            ctx.fillStyle = 'yellow'; ctx.font = '20px Kanit'; ctx.textAlign = 'center'; ctx.fillText('👑', 0, -e.radius - 10);
+        }
+        if (e.isHealthDropper) {
+            ctx.fillStyle = 'white'; ctx.font = 'bold 14px Kanit'; ctx.textAlign = 'center'; ctx.fillText('❤️', 0, e.radius * 0.4);
+        }
+        if (e.hp < e.maxHp) {
+            ctx.fillStyle = '#7f1d1d'; ctx.fillRect(-e.radius, -e.radius - 8, e.radius * 2, 4);
+            ctx.fillStyle = '#16a34a'; ctx.fillRect(-e.radius, -e.radius - 8, (e.radius * 2) * (e.hp / e.maxHp), 4);
+        }
+        ctx.restore();
+    }
+
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        drawPlayer(player);
+        
+        xpGems.forEach(g => { ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(Math.PI / 4); ctx.fillStyle = g.color; ctx.fillRect(-g.radius, -g.radius, g.radius*2, g.radius*2); ctx.restore(); });
+        pickups.forEach(p => { if (p.type === 'health') { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(p.x, p.y - 3); ctx.bezierCurveTo(p.x, p.y - 7, p.x - 6, p.y - 7, p.x - 6, p.y); ctx.bezierCurveTo(p.x - 6, p.y + 5, p.x, p.y + 9, p.x, p.y + 12); ctx.bezierCurveTo(p.x, p.y + 9, p.x + 6, p.y + 5, p.x + 6, p.y); ctx.bezierCurveTo(p.x + 6, p.y - 7, p.x, p.y - 7, p.x, p.y - 3); ctx.fill(); }});
+        
+        enemies.forEach(e => {
+            drawEnemy(e);
+        });
+        
+        weapons.forEach(w => {
+            if (w.type === 'aura') {
+                const auraTime = Date.now() / 200;
+                const radius = w.range * (0.95 + Math.sin(auraTime * 0.5) * 0.05);
+                const isEvolved = w.id === 'soul_eater';
+                let gradient = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, radius);
+                if (isEvolved) {
+                    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+                    gradient.addColorStop(0.7, 'rgba(6, 95, 70, 0.2)');
+                    gradient.addColorStop(1, 'rgba(5, 46, 22, 0)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(253, 224, 71, 0.3)');
+                    gradient.addColorStop(0.7, 'rgba(250, 204, 21, 0.1)');
+                    gradient.addColorStop(1, 'rgba(252, 165, 165, 0)');
+                }
+                ctx.fillStyle = gradient;
+                ctx.beginPath(); ctx.arc(player.x, player.y, radius, 0, Math.PI*2); ctx.fill();
+            }
+             if (w.type === 'evo_orbital_ring') {
+                const ringTime = Date.now();
+                const alpha = 0.6 + Math.sin(ringTime/150) * 0.3;
+                ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
+                ctx.lineWidth = 15;
+                ctx.shadowColor = '#a78bfa';
+                ctx.shadowBlur = 20;
+                ctx.beginPath(); ctx.arc(player.x, player.y, w.range, 0, Math.PI*2); ctx.stroke();
+                if (Math.random() > 0.9) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2;
+                    for (let i = 0; i < 3; i++) {
+                        const startAngle = Math.random() * Math.PI * 2;
+                        const endAngle = startAngle + (Math.random() - 0.5) * Math.PI;
+                        ctx.beginPath();
+                        ctx.moveTo(player.x + Math.cos(startAngle) * w.range, player.y + Math.sin(startAngle) * w.range);
+                        ctx.lineTo(player.x + Math.cos(endAngle) * (w.range * 0.8), player.y + Math.sin(endAngle) * (w.range * 0.8));
+                        ctx.stroke();
+                    }
+                }
+                ctx.shadowBlur=0;
+             }
+            w.projectiles.forEach(p => {
+                ctx.save(); ctx.translate(p.x, p.y);
+                if (w.type === 'orbital') { ctx.shadowColor = '#00BFFF'; ctx.shadowBlur = 15; const gradient = ctx.createRadialGradient(0, 0, 2, 0, 0, 12); gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); gradient.addColorStop(0.4, 'rgba(173, 216, 230, 0.8)'); gradient.addColorStop(1, 'rgba(0, 191, 255, 0)'); ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(0, 0); const angle = Math.random() * Math.PI * 2; const length = 10 + Math.random() * 5; ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length); ctx.stroke(); } ctx.shadowBlur = 0; }
+                else if (w.type === 'horizontal') { const life = (Date.now() - p.spawnTime) / w.duration; const alpha = Math.sin(life * Math.PI); ctx.globalAlpha = alpha; const isEvolved = w.id === 'bloody_tear'; ctx.strokeStyle = isEvolved ? '#f56565' : '#E2E8F0'; ctx.lineWidth = isEvolved ? 7 : 5; ctx.shadowColor = isEvolved ? '#c53030' : '#E2E8F0'; ctx.shadowBlur = 7; ctx.beginPath(); const xStart = p.side === 'left' ? -player.radius : player.radius; const xEnd = p.side === 'left' ? -(p.width + player.radius) : (p.width + player.radius); const yControl = (p.side === 'left' ? 1 : -1) * p.height * 2.5; ctx.moveTo(xStart, 0); ctx.quadraticCurveTo((xStart + xEnd) / 2.5, yControl, xEnd, 0); ctx.stroke(); ctx.globalAlpha = 1; ctx.shadowBlur = 0; }
+                else if (w.type === 'arc' || w.type === 'evo_spiral') { ctx.rotate(p.angle); ctx.fillStyle = '#8B4513'; ctx.fillRect(-4, -20, 8, 40); ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(18, -15); ctx.lineTo(18, 15); ctx.lineTo(0, 22); ctx.lineTo(-18, 15); ctx.lineTo(-18, -15); ctx.closePath(); const gradient = ctx.createLinearGradient(-18, 0, 18, 0); gradient.addColorStop(0, '#A0AEC0'); gradient.addColorStop(0.5, '#E2E8F0'); gradient.addColorStop(1, '#A0AEC0'); ctx.fillStyle = gradient; ctx.fill(); ctx.strokeStyle = '#4A5568'; ctx.lineWidth = 2; ctx.stroke(); }
+                else if (w.type === 'homing' || w.type === 'evo_stream') { const isEvolved = w.id === 'thousand_edge'; ctx.fillStyle = isEvolved ? '#fef08a' : '#a78bfa'; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(5, 8); ctx.lineTo(-5, 8); ctx.closePath(); ctx.fill(); ctx.shadowColor = isEvolved ? '#fde047' : '#c4b5fd'; ctx.shadowBlur = 8; }
+                ctx.restore();
+            });
+        });
+        healthBar.style.width = `${(player.hp/player.maxHp)*100}%`; healthText.textContent = `${Math.ceil(player.hp)}/${player.maxHp}`;
+        xpBar.style.width = `${(player.xp/player.xpToNextLevel)*100}%`; levelText.textContent = `เลเวล: ${player.level}`;
+        const min = Math.floor(gameTime/60).toString().padStart(2,'0'); const sec = (gameTime%60).toString().padStart(2,'0');
+        timerText.textContent = `เวลา: ${min}:${sec}`;
+    }
+
+    // --- Game Loop and State ---
+    let lastTime = 0, spawnTimer = 0, gameClockTimer = 0, healthSpawnTimer = 0;
+    function gameLoop(timestamp) {
+        if (gameState !== 'playing') return;
+        const deltaTime = (timestamp - lastTime) / 1000; lastTime = timestamp;
+        spawnTimer += deltaTime; gameClockTimer += deltaTime; healthSpawnTimer += deltaTime;
+        if (gameClockTimer >= 1) { gameTime++; gameClockTimer = 0; }
+        
+        if (Math.floor(gameTime / 60) > difficultyManager.minute) {
+            difficultyManager.minute = Math.floor(gameTime / 60);
+            difficultyManager.spawnRateMultiplier *= 0.85; 
+            difficultyManager.enemyHpMultiplier += gameTime > 600 ? 0.8 : 0.4;
+            difficultyManager.enemySpeedMultiplier += gameTime > 600 ? 0.1 : 0.05;
+        }
+
+        if (healthSpawnTimer > 30) { spawnHealthEnemy(); healthSpawnTimer = 0; }
+        if (gameTime >= nextBossTime) { spawnBoss(); nextBossTime += 300; }
+        const spawnRate = Math.max(0.08, 0.5 * difficultyManager.spawnRateMultiplier);
+        if (spawnTimer > spawnRate) { const waveSize = 1 + Math.floor(gameTime / 30); for(let i=0; i<waveSize; i++) spawnEnemy(); spawnTimer = 0; }
+        updatePlayer(); updateEnemies(); updateWeapons(); updateXPGems(); updatePickups(); checkCollisions(); draw();
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+    
+    function resetGame() {
+        player.hp = 100; player.maxHp = 100; player.xp = 0; player.level = 1;
+        player.xpToNextLevel = 10;
+        player.x = canvas.width / 2; player.y = canvas.height / 2;
+        player.passives = [];
+        player.stats = { speed: 3, damageModifier: 1.0, cooldownModifier: 1.0, projectileSpeedModifier: 1.0, damageReduction: 0 };
+        weapons = []; enemies = []; xpGems = []; pickups = [];
+        gameTime = 0; enemiesKilledCount = 0; spawnTimer = 0; gameClockTimer = 0; healthSpawnTimer = 0; nextBossTime = 300;
+        difficultyManager = { minute: 0, spawnRateMultiplier: 2.0, enemyHpMultiplier: 1.0, enemySpeedMultiplier: 1.0 };
+        updateInventoryUI();
+    }
+    
+    function startGame() {
+        if (!selectedCharacterId) return; resetGame();
+        const character = CHARACTERS.find(c => c.id === selectedCharacterId);
+        player.color = character.color;
+        const weaponId = character.startingWeaponId;
+        const weaponInstance = JSON.parse(JSON.stringify(WEAPONS_MASTER_LIST[weaponId]));
+        weaponInstance.id = weaponId; weaponInstance.level = 1; weapons.push(weaponInstance);
+        startScreen.classList.add('hidden');
+        gameOverScreen.classList.add('hidden'); gameOverScreen.classList.remove('flex');
+        updateInventoryUI();
+        gameState = 'playing'; lastTime = performance.now(); gameLoop(lastTime);
+    }
+
+    function gameOver() {
+        gameState = 'gameOver'; cancelAnimationFrame(animationFrameId);
+        const min = Math.floor(gameTime/60).toString().padStart(2,'0'); const sec = (gameTime%60).toString().padStart(2,'0');
+        document.getElementById('survivalTime').textContent = `${min}:${sec}`;
+        document.getElementById('enemiesKilled').textContent = enemiesKilledCount;
+        gameOverScreen.classList.remove('hidden'); gameOverScreen.classList.add('flex');
+    }
+
+    startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', () => {
+        gameOverScreen.classList.add('hidden'); gameOverScreen.classList.remove('flex');
+        startScreen.classList.remove('hidden'); populateCharacterSelection();
+        startButton.disabled = true;
+        document.querySelectorAll('#characterSelection .card').forEach(c => c.classList.remove('selected'));
+    });
+    
+    // Initial call
+    populateCharacterSelection();
+
+</script>
 </body>
 </html>
+
