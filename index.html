@@ -103,28 +103,28 @@
             animation: screenShake 0.3s linear;
         }
         .inventory-icon {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border: 2px solid #4a5568;
             background-color: #2d3748;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 20px;
             position: relative;
         }
         .inventory-icon .level-badge {
             position: absolute;
-            bottom: -5px;
-            right: -5px;
+            bottom: -6px;
+            right: -6px;
             background-color: #f6e05e;
             color: black;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 12px;
-            line-height: 18px;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            line-height: 20px;
             text-align: center;
             border: 1px solid black;
         }
@@ -135,23 +135,26 @@
     <canvas id="gameCanvas"></canvas>
 
     <!-- UI Elements -->
-    <div id="uiContainer" class="ui-container p-4 flex flex-col justify-between">
+    <div id="uiContainer" class="ui-container p-2 sm:p-4 flex flex-col">
         <!-- Top UI -->
-        <div class="flex justify-between items-start text-lg">
-            <div id="timer" class="bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg font-bold">เวลา: 00:00</div>
-            <div id="inventoryDisplay" class="flex flex-col items-end gap-2">
+        <div class="relative w-full text-base sm:text-lg flex-shrink-0">
+            <div id="level" class="absolute top-0 left-0 bg-gray-800 bg-opacity-70 px-3 py-2 rounded-lg">เลเวล: 1</div>
+            <div id="timer" class="absolute top-0 left-1/2 -translate-x-1/2 bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg font-bold">เวลา: 00:00</div>
+            <div id="inventoryDisplay" class="absolute top-0 right-0 flex flex-col items-end gap-2">
                  <div id="weaponIcons" class="flex gap-1"></div>
                  <div id="passiveIcons" class="flex gap-1"></div>
             </div>
-            <div id="level" class="bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg">เลเวล: 1</div>
         </div>
 
+        <!-- Spacer -->
+        <div class="flex-grow"></div>
+
         <!-- Bottom UI -->
-        <div class="flex flex-col items-center gap-2">
+        <div class="flex flex-col items-center gap-2 bg-gray-900 bg-opacity-50 p-3 rounded-t-xl flex-shrink-0">
             <div class="w-full max-w-sm bg-gray-700 rounded-full h-6 border-2 border-gray-500">
                 <div id="healthBar" class="bg-red-500 h-full rounded-full transition-all duration-300"></div>
             </div>
-            <div id="healthText" class="font-semibold">100 / 100</div>
+            <div id="healthText" class="font-semibold text-sm sm:text-base">100 / 100</div>
             <div class="w-full max-w-sm bg-gray-700 rounded-full h-4 border-2 border-gray-500">
                 <div id="xpBar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
@@ -166,16 +169,16 @@
 
     <!-- Start Screen Modal -->
     <div id="startScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex flex-col justify-center items-center z-30">
-        <h1 class="text-5xl md:text-6xl font-bold mb-8 text-yellow-300">เลือกผู้รอดชีวิต</h1>
+        <h1 class="text-4xl sm:text-6xl font-bold mb-4 sm:mb-8 text-yellow-300">เลือกผู้รอดชีวิต</h1>
         <div id="characterSelection" class="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 mb-8">
             <!-- Character cards will be inserted here -->
         </div>
-        <button id="startButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-lg text-2xl shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>เริ่มเกม</button>
+        <button id="startButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-xl sm:text-2xl shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>เริ่มเกม</button>
     </div>
 
     <!-- Level Up Modal -->
     <div id="levelUpScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex-col justify-center items-center z-30 hidden">
-        <h2 class="text-5xl font-bold mb-8 text-yellow-300">เลเวลอัป!</h2>
+        <h2 class="text-4xl sm:text-5xl font-bold mb-4 sm:mb-8 text-yellow-300">เลเวลอัป!</h2>
         <div id="upgradeOptions" class="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
             <!-- Upgrade cards will be inserted here -->
         </div>
@@ -183,10 +186,10 @@
 
     <!-- Game Over Modal -->
     <div id="gameOverScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex-col justify-center items-center z-30 hidden">
-        <h2 class="text-6xl font-bold mb-4 text-red-500">เกมจบแล้ว</h2>
-        <p class="text-2xl mb-2">คุณเอาชีวิตรอดได้: <span id="survivalTime" class="font-bold"></span></p>
-        <p class="text-xl mb-8">ศัตรูที่กำจัดได้: <span id="enemiesKilled" class="font-bold"></span></p>
-        <button id="restartButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-lg text-2xl shadow-lg">เล่นอีกครั้ง</button>
+        <h2 class="text-5xl sm:text-6xl font-bold mb-4 text-red-500">เกมจบแล้ว</h2>
+        <p class="text-lg sm:text-2xl mb-2">คุณเอาชีวิตรอดได้: <span id="survivalTime" class="font-bold"></span></p>
+        <p class="text-base sm:text-xl mb-8">ศัตรูที่กำจัดได้: <span id="enemiesKilled" class="font-bold"></span></p>
+        <button id="restartButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-lg text-xl sm:text-2xl shadow-lg">เล่นอีกครั้ง</button>
     </div>
 
 <script>
@@ -305,7 +308,7 @@
             const card = document.createElement('div');
             card.className = 'card bg-gray-800 border-4 border-gray-600 p-4 rounded-lg text-center';
             card.dataset.charId = char.id;
-            card.innerHTML = `<div class="w-16 h-16 rounded-full mx-auto mb-4" style="background-color: ${char.color};"></div><h3 class="text-2xl font-bold text-yellow-300 mb-2">${char.name}</h3><p class="text-gray-300 text-sm">${char.description}</p>`;
+            card.innerHTML = `<div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full mx-auto mb-2 sm:mb-4" style="background-color: ${char.color};"></div><h3 class="text-xl sm:text-2xl font-bold text-yellow-300 mb-2">${char.name}</h3><p class="text-gray-300 text-sm">${char.description}</p>`;
             card.addEventListener('click', () => { selectedCharacterId = char.id; document.querySelectorAll('#characterSelection .card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); startButton.disabled = false; });
             container.appendChild(card);
         });
@@ -413,7 +416,7 @@
             const card = document.createElement('div');
             const cardClasses = 'card bg-gray-800 border-2 border-yellow-400 p-6 rounded-lg text-center';
             card.className = upgrade.isEvolution ? `${cardClasses} evolution-card` : cardClasses;
-            card.innerHTML = `<h3 class="text-2xl font-bold text-yellow-300 mb-2">${upgrade.name}</h3><p class="text-gray-300">${upgrade.description}</p>`;
+            card.innerHTML = `<h3 class="text-xl sm:text-2xl font-bold text-yellow-300 mb-2">${upgrade.name}</h3><p class="text-gray-300 text-sm sm:text-base">${upgrade.description}</p>`;
             card.onclick = () => selectUpgrade(upgrade);
             container.appendChild(card);
         });
