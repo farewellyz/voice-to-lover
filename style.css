@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;700&display=swap');
+body {
+    font-family: 'Kanit', sans-serif;
+    touch-action: none;
+    overflow: hidden;
+    background-color: #1a202c;
+    color: white;
+}
+canvas {
+    background-color: #0d1117;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+.ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+.modal {
+    pointer-events: auto;
+}
+.card {
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+}
+.card.selected {
+    transform: translateY(-5px) scale(1.05);
+    border-color: #f6e05e; /* yellow-300 */
+    box-shadow: 0 0 20px #f6e05e;
+}
+.evolution-card {
+    border-color: #68d391; /* green-400 */
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 15px #68d391; }
+    50% { box-shadow: 0 0 30px #9ae6b4; }
+}
+.damage-number {
+    position: absolute;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px black;
+    animation: floatUp 0.7s ease-out forwards;
+    pointer-events: none;
+    z-index: 5;
+}
+@keyframes floatUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-40px);
+    }
+}
+@keyframes screenShake {
+    0%, 100% { transform: translate(0, 0); }
+    10%, 30%, 50%, 70%, 90% { transform: translate(-2px, 2px); }
+    20%, 40%, 60%, 80% { transform: translate(2px, -2px); }
+}
+.screen-shake {
+    animation: screenShake 0.3s linear;
+}
+.inventory-icon {
+    width: 44px;
+    height: 44px;
+    border: 2px solid #4a5568;
+    background-color: #2d3748;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+    position: relative;
+}
+.inventory-icon .level-badge {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    background-color: #f6e05e;
+    color: black;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    border: 1px solid black;
+}
+.evo-guide-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: rgba(0,0,0,0.2);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+.pause-button {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
