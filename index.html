@@ -109,6 +109,19 @@
             text-align: center;
             border: 1px solid black;
         }
+        .evo-guide-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        .pause-button {
+            pointer-events: auto;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="overscroll-none">
@@ -119,32 +132,75 @@
     <div id="uiContainer" class="ui-container pointer-events-none">
         <!-- Top UI -->
         <div class="absolute top-0 left-0 w-full p-2 sm:p-4">
-            <div class="relative w-full text-base sm:text-lg">
-                <div id="level" class="absolute top-0 left-0 bg-gray-800 bg-opacity-70 px-3 py-2 rounded-lg">เลเวล: 1</div>
-                <div id="timer" class="absolute top-0 left-1/2 -translate-x-1/2 bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg font-bold">เวลา: 00:00</div>
+             <div class="relative w-full h-12">
+                <!-- Top-Left Group -->
+                <div class="absolute top-0 left-0 flex items-start gap-3">
+                    <div id="pauseButton" class="pause-button bg-gray-700 hover:bg-gray-600 p-2 rounded-full shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col items-start gap-2">
+                        <div id="level" class="bg-gray-800 bg-opacity-70 px-3 py-1 rounded-lg text-sm sm:text-base">เลเวล: 1</div>
+                        <div class="w-40 sm:w-56">
+                            <div class="w-full bg-black bg-opacity-50 rounded-full h-4 sm:h-5 border-2 border-gray-600 relative">
+                                <div id="healthBar" class="bg-red-500 h-full rounded-full transition-all duration-300"></div>
+                                <div id="healthText" class="absolute inset-0 text-white text-xs sm:text-sm font-bold flex items-center justify-center" style="text-shadow: 1px 1px 2px black;">100 / 100</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top-Center -->
+                <div id="timer" class="absolute top-0 left-1/2 -translate-x-1/2 bg-gray-800 bg-opacity-70 px-4 py-2 rounded-lg font-bold text-base sm:text-lg">เวลา: 00:00</div>
+
+                <!-- Top-Right -->
                 <div id="inventoryDisplay" class="absolute top-0 right-0 flex flex-col items-end gap-2">
                      <div id="weaponIcons" class="flex gap-1"></div>
                      <div id="passiveIcons" class="flex gap-1"></div>
                 </div>
-            </div>
+             </div>
         </div>
 
         <!-- Bottom UI -->
-        <div class="absolute bottom-0 left-0 w-full flex flex-col items-center gap-2 bg-gray-900 bg-opacity-50 p-3 rounded-t-xl">
-            <div class="w-full max-w-sm bg-gray-700 rounded-full h-6 border-2 border-gray-500">
-                <div id="healthBar" class="bg-red-500 h-full rounded-full transition-all duration-300"></div>
-            </div>
-            <div id="healthText" class="font-semibold text-sm sm:text-base">100 / 100</div>
-            <div class="w-full max-w-sm bg-gray-700 rounded-full h-4 border-2 border-gray-500">
-                <div id="xpBar" class="bg-blue-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+        <div class="absolute bottom-0 left-0 w-full">
+            <div class="w-full bg-gray-900 bg-opacity-50 h-1.5 sm:h-2">
+                <div id="xpBar" class="bg-blue-500 h-full" style="width: 0%"></div>
             </div>
         </div>
     </div>
         
     <div id="damageNumbersContainer"></div>
 
+    <!-- Main Menu Modal -->
+    <div id="mainMenuScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex flex-col justify-center items-center z-40">
+        <h1 class="text-5xl sm:text-7xl font-bold mb-12 text-yellow-300 text-center">Survivor Arena</h1>
+        <div class="flex flex-col gap-6">
+            <button id="menuStartButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-12 rounded-lg text-2xl shadow-lg">เริ่มเกม</button>
+            <button id="menuGuideButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-12 rounded-lg text-2xl shadow-lg">คู่มือ</button>
+        </div>
+    </div>
+
+    <!-- Guide/Settings Modal -->
+    <div id="guideScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-90 flex-col justify-center items-center z-40 hidden p-4">
+        <h2 class="text-4xl sm:text-5xl font-bold mb-8 text-yellow-300">คู่มือการวิวัฒนาการ</h2>
+        <div id="evoGuideContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl mb-8 text-3xl">
+            <!-- Evo guide items will be generated here -->
+        </div>
+        <button id="guideBackButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg">กลับ</button>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="pauseScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex-col justify-center items-center z-30 hidden">
+        <h2 class="text-5xl font-bold mb-8 text-yellow-300">หยุดชั่วคราว</h2>
+        <div class="flex flex-col gap-6">
+            <button id="resumeButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-12 rounded-lg text-2xl shadow-lg">เล่นต่อ</button>
+            <button id="pauseGuideButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-12 rounded-lg text-2xl shadow-lg">คู่มือ</button>
+        </div>
+    </div>
+
     <!-- Start Screen Modal -->
-    <div id="startScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex flex-col justify-center items-center z-30">
+    <div id="startScreen" class="modal fixed inset-0 bg-gray-900 bg-opacity-80 flex flex-col justify-center items-center z-30 hidden">
         <h1 class="text-4xl sm:text-6xl font-bold mb-4 sm:mb-8 text-yellow-300">เลือกผู้รอดชีวิต</h1>
         <div id="characterSelection" class="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 mb-8">
             <!-- Character cards will be inserted here -->
@@ -179,13 +235,23 @@
     const xpBar = document.getElementById('xpBar');
     const levelText = document.getElementById('level');
     const timerText = document.getElementById('timer');
+    const mainMenuScreen = document.getElementById('mainMenuScreen');
+    const guideScreen = document.getElementById('guideScreen');
+    const pauseScreen = document.getElementById('pauseScreen');
     const startScreen = document.getElementById('startScreen');
     const levelUpScreen = document.getElementById('levelUpScreen');
     const gameOverScreen = document.getElementById('gameOverScreen');
+    const menuStartButton = document.getElementById('menuStartButton');
+    const menuGuideButton = document.getElementById('menuGuideButton');
+    const guideBackButton = document.getElementById('guideBackButton');
+    const pauseButton = document.getElementById('pauseButton');
+    const resumeButton = document.getElementById('resumeButton');
+    const pauseGuideButton = document.getElementById('pauseGuideButton');
     const startButton = document.getElementById('startButton');
     const restartButton = document.getElementById('restartButton');
     const weaponIconsContainer = document.getElementById('weaponIcons');
     const passiveIconsContainer = document.getElementById('passiveIcons');
+    const evoGuideContainer = document.getElementById('evoGuideContainer');
 
 
     let canvasWidth = window.innerWidth;
@@ -193,13 +259,14 @@
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    let gameState = 'start';
+    let gameState = 'menu';
     let gameTime = 0;
     let enemiesKilledCount = 0;
     let animationFrameId;
     let selectedCharacterId = null;
     let nextBossTime = 300; // 5 minutes
     const RENDER_SCALE = 0.75; // Zoom out factor
+    let guideReturnState = 'menu';
 
     // --- Player ---
     const player = {
@@ -218,11 +285,11 @@
 
     // --- Master Lists ---
     const WEAPONS_MASTER_LIST = {
-        whip: { name: "แส้", icon: "〰️", type: 'horizontal', damage: 15, count: 1, range: 1.0, duration: 200, cooldown: 1500, lastAttackTime: 0, projectiles: [], maxLevel: 10 },
-        lightning: { name: "พลังสายฟ้า", icon: "⚡️", type: 'orbital', damage: 12, count: 1, speed: 0.035, range: 80 * RENDER_SCALE, angle: 0, projectiles: [], maxLevel: 10 },
-        axe: { name: "ขวาน", icon: "🪓", type: 'arc', damage: 25, count: 1, speed: 7 * RENDER_SCALE, range: 1.0, cooldown: 2000, lastAttackTime: 0, projectiles: [], maxLevel: 10 },
-        garlic: { name: "ออร่ากระเทียม", icon: "🧄", type: 'aura', damage: 5, count: 1, range: 100 * RENDER_SCALE, cooldown: 500, lastAttackTime: 0, lastHit: new Map(), projectiles: [], maxLevel: 10 },
-        missile: { name: "กระสุนเวทนำวิถี", icon: "✨", type: 'homing', damage: 20, count: 1, speed: 6 * RENDER_SCALE, cooldown: 1800, lastAttackTime: 0, projectiles: [], maxLevel: 10 }
+        laser: { name: "ปืนเลเซอร์", icon: "🔫", type: 'laser_beam', damage: 15, count: 1, range: 200 * RENDER_SCALE, duration: 150, cooldown: 2500, lastAttackTime: 0, projectiles: [], maxLevel: 5 },
+        lightning: { name: "พลังสายฟ้า", icon: "⚡️", type: 'orbital', damage: 12, count: 1, speed: 0.035, range: 80 * RENDER_SCALE, angle: 0, projectiles: [], maxLevel: 5 },
+        axe: { name: "ขวาน", icon: "🪓", type: 'arc', damage: 25, count: 1, speed: 7 * RENDER_SCALE, range: 1.0, cooldown: 2000, lastAttackTime: 0, projectiles: [], maxLevel: 5 },
+        garlic: { name: "ออร่ากระเทียม", icon: "🧄", type: 'aura', damage: 3, count: 1, range: 100 * RENDER_SCALE, cooldown: 500, lastAttackTime: 0, lastHit: new Map(), projectiles: [], maxLevel: 5 },
+        missile: { name: "กระสุนเวทนำวิถี", icon: "✨", type: 'homing', damage: 20, count: 1, speed: 6 * RENDER_SCALE, cooldown: 1800, lastAttackTime: 0, projectiles: [], maxLevel: 5, pierce: 1 }
     };
     const PASSIVES_MASTER_LIST = {
         spinach: { name: "ผักโขม", icon: "🥬", description: "เพิ่มพลังโจมตี 10% ต่อเลเวล", maxLevel: 5, apply: (p, level) => { p.stats.damageModifier = 1 + (0.1 * level); } },
@@ -232,11 +299,11 @@
         candelabrador: { name: "เชิงเทียน", icon: "🕯️", description: "เพิ่มความเร็วโปรเจคไทล์ 10%", maxLevel: 5, apply: (p, level) => { p.stats.projectileSpeedModifier = 1 + (0.1 * level); } }
     };
     const EVOLUTIONS = {
-        bloody_tear: { name: "แส้โลหิต", icon: "🩸", baseWeaponId: 'whip', passiveId: 'spinach', evolvedWeapon: { name: "แส้โลหิต", type: 'horizontal', damage: 40, count: 1, range: 1.2, duration: 250, cooldown: 1300, lastAttackTime: 0, projectiles: [], isEvolved: true, lifestealChance: 0.1 } },
+        supercharge_beam: { name: "ลำแสงซูเปอร์ชาร์จ", icon: "💥", baseWeaponId: 'laser', passiveId: 'spinach', evolvedWeapon: { name: "ลำแสงซูเปอร์ชาร์จ", type: 'laser_beam', damage: 50, count: 3, range: 300 * RENDER_SCALE, duration: 250, cooldown: 1500, lastAttackTime: 0, projectiles: [], isEvolved: true } },
         thunder_loop: { name: "วงแหวนอัสนี", icon: "🌀", baseWeaponId: 'lightning', passiveId: 'wings', evolvedWeapon: { name: "วงแหวนอัสนี", type: 'evo_orbital_ring', damage: 25, range: 150 * RENDER_SCALE, cooldown: 250, lastAttackTime: 0, lastHit: new Map(), projectiles: [], isEvolved: true } },
         death_spiral: { name: "เกลียวมรณะ", icon: "💀", baseWeaponId: 'axe', passiveId: 'candelabrador', evolvedWeapon: { name: "เกลียวมรณะ", type: 'evo_spiral', damage: 60, count: 8, speed: 6 * RENDER_SCALE, cooldown: 2500, lastAttackTime: 0, projectiles: [], isEvolved: true } },
-        soul_eater: { name: "เครื่องดูดวิญญาณ", icon: "👻", baseWeaponId: 'garlic', passiveId: 'armor', evolvedWeapon: { name: "เครื่องดูดวิญญาณ", type: 'aura', damage: 20, range: 150 * RENDER_SCALE, cooldown: 300, lastAttackTime: 0, lastHit: new Map(), projectiles: [], isEvolved: true, lifestealOnKillChance: 0.05 } },
-        thousand_edge: { name: "พันศาสตรา", icon: "🗡️", baseWeaponId: 'missile', passiveId: 'tome', evolvedWeapon: { name: "พันศาสตรา", type: 'evo_stream', damage: 25, speed: 8 * RENDER_SCALE, cooldown: 100, lastAttackTime: 0, projectiles: [], isEvolved: true } }
+        soul_eater: { name: "เครื่องดูดวิญญาณ", icon: "👻", baseWeaponId: 'garlic', passiveId: 'armor', evolvedWeapon: { name: "เครื่องดูดวิญญาณ", type: 'aura', damage: 15, range: 150 * RENDER_SCALE, cooldown: 300, lastAttackTime: 0, lastHit: new Map(), projectiles: [], isEvolved: true, lifestealOnKillChance: 0.05 } },
+        thousand_edge: { name: "พันศาสตรา", icon: "🗡️", baseWeaponId: 'missile', passiveId: 'tome', evolvedWeapon: { name: "พันศาสตรา", type: 'evo_stream', damage: 25, speed: 8 * RENDER_SCALE, cooldown: 100, lastAttackTime: 0, projectiles: [], isEvolved: true, pierce: 5 } }
     };
     
     let weapons = [];
@@ -245,13 +312,14 @@
     // --- Characters ---
     const CHARACTERS = [
         { id: 'mage', name: 'นักเวทย์', description: 'เริ่มต้นด้วยพลังสายฟ้า', color: '#63b3ed', startingWeaponId: 'lightning' },
-        { id: 'knight', name: 'อัศวิน', description: 'เริ่มต้นด้วยแส้', color: '#a0aec0', startingWeaponId: 'whip' },
+        { id: 'robot', name: 'หุ่นยนต์', description: 'เริ่มต้นด้วยปืนเลเซอร์', color: '#9e9e9e', startingWeaponId: 'laser' },
         { id: 'barbarian', name: 'คนเถื่อน', description: 'เริ่มต้นด้วยขวาน', color: '#f6ad55', startingWeaponId: 'axe' }
     ];
 
     let enemies = [];
     let xpGems = [];
     let pickups = [];
+    let monsterProjectiles = [];
     const keys = {};
     let isPointerDown = false;
     let pointerPos = { x: 0, y: 0 };
@@ -276,6 +344,25 @@
         });
     }
 
+    function populateEvoGuide() {
+        evoGuideContainer.innerHTML = '';
+        for (const key in EVOLUTIONS) {
+            const evo = EVOLUTIONS[key];
+            const weapon = WEAPONS_MASTER_LIST[evo.baseWeaponId];
+            const passive = PASSIVES_MASTER_LIST[evo.passiveId];
+            const item = document.createElement('div');
+            item.className = 'evo-guide-item';
+            item.innerHTML = `
+                <div class="inventory-icon rounded-md">${weapon.icon}</div>
+                <span>+</span>
+                <div class="inventory-icon rounded-md">${passive.icon}</div>
+                <span>=</span>
+                <div class="inventory-icon rounded-md bg-green-700 border-green-400">${evo.icon}</div>
+            `;
+            evoGuideContainer.appendChild(item);
+        }
+    }
+
     // --- Character Selection ---
     function populateCharacterSelection() {
         const container = document.getElementById('characterSelection');
@@ -294,21 +381,20 @@
     function getWeaponUpgradeDescription(weapon) {
         const nextLevel = weapon.level + 1;
         switch (weapon.id) {
-            case 'whip':
-                if (nextLevel === 3 || nextLevel === 5 || nextLevel === 7 || nextLevel === 10) return `เพิ่มแส้เป็น ${weapon.count + 1} เส้น`;
-                if (nextLevel === 8) return `เพิ่มระยะและความแรงอย่างมาก`;
-                return `เพิ่มพลังโจมตี`;
+             case 'laser':
+                if (nextLevel === 2 || nextLevel === 4) return `เพิ่มจำนวนลำแสงเป็น ${weapon.count + 1} ลำ`;
+                return `เพิ่มพลังโจมตีและความเร็ว`;
             case 'lightning':
-                if (nextLevel === 3 || nextLevel === 6 || nextLevel === 9) return `เพิ่มจำนวนเป็น ${weapon.count + 1} ลูก`;
-                return `เพิ่มพลังโจมตีและระยะ`;
+                if (nextLevel === 3 || nextLevel === 5) return `เพิ่มจำนวนเป็น ${weapon.count + 1} ลูก`;
+                return `เพิ่มพลังโจมตีและความเร็วหมุน`;
             case 'axe':
-                if (nextLevel === 3 || nextLevel === 6 || nextLevel === 9) return `เพิ่มขวานเป็น ${weapon.count + 1} ชิ้น`;
+                if (nextLevel === 3 || nextLevel === 5) return `เพิ่มขวานเป็น ${weapon.count + 1} ชิ้น`;
                 return `เพิ่มพลังโจมตีและลดคูลดาวน์`;
             case 'garlic':
                 return `เพิ่มพลังโจมตีและขยายขอบเขต`;
             case 'missile':
-                 if (nextLevel % 2 === 0) return `เพิ่มจำนวนกระสุนเป็น ${weapon.count + 1} ลูก`;
-                 return `เพิ่มพลังโจมตี`;
+                 if (nextLevel === 2 || nextLevel === 4) return `เพิ่มจำนวนกระสุนเป็น ${weapon.count + 1} ลูก`;
+                 return `เพิ่มพลังโจมตีและการเจาะทะลุ`;
             default: return `เพิ่มประสิทธิภาพของอาวุธ`;
         }
     }
@@ -317,28 +403,40 @@
         weapon.level++;
         const level = weapon.level;
         switch (weapon.id) {
-            case 'whip': weapon.damage += 5; if (level === 3 || level === 5 || level === 7 || level === 10) weapon.count++; if (level === 8) weapon.range *= 1.25; break;
-            case 'lightning': weapon.damage += 3; if (level === 3 || level === 6 || level === 9) weapon.count++; weapon.range += 10 * RENDER_SCALE; break;
-            case 'axe': weapon.damage += 8; if (level === 3 || level === 6 || level === 9) weapon.count++; weapon.cooldown *= 0.95; break;
-            case 'garlic': weapon.damage += 2; weapon.range += 15 * RENDER_SCALE; weapon.cooldown *= 0.9; break;
-            case 'missile': weapon.damage += 5; if (level % 2 === 0) weapon.count++; weapon.cooldown *= 0.95; break;
+            case 'laser':
+                weapon.damage += 5;
+                if (level === 2 || level === 4) weapon.count++;
+                weapon.cooldown *= 0.92;
+                break;
+            case 'lightning': 
+                weapon.damage += 3; 
+                if (level === 3 || level === 5) weapon.count++; 
+                weapon.speed += 0.005;
+                break;
+            case 'axe': weapon.damage += 8; if (level === 3 || level === 5) weapon.count++; weapon.cooldown *= 0.95; break;
+            case 'garlic': weapon.damage += 1; weapon.range += 12 * RENDER_SCALE; weapon.cooldown *= 0.95; break;
+            case 'missile':
+                weapon.damage += 5;
+                if (level === 2 || level === 4) weapon.count++;
+                weapon.pierce = (weapon.pierce || 1) + 1;
+                break;
         }
     }
 
     function getUpgradeOptions() {
-        // Evolution Check: Weapon at Lv. 8, Passive at Max Lv. 5
+        // Evolution Check: Weapon at Lv. 5, Passive at Max Lv. 5
         for (const evoKey in EVOLUTIONS) {
             const evo = EVOLUTIONS[evoKey];
-            const weapon = weapons.find(w => w.id === evo.baseWeaponId && w.level === 8);
+            const weapon = weapons.find(w => w.id === evo.baseWeaponId && w.level === 5);
             const passive = player.passives.find(p => p.id === evo.passiveId && p.level === PASSIVES_MASTER_LIST[p.id].maxLevel);
             if (weapon && passive) {
-                return [{ id: `evolve_${weapon.id}`, isEvolution: true, name: `วิวัฒนาการ: ${evo.name}`, description: evo.description,
+                return [{ id: `evolve_${weapon.id}`, isEvolution: true, name: `วิวัฒนาการ: ${evo.name}`, description: `เปลี่ยนอาวุธเป็นขั้นสุดยอด`,
                     apply: () => {
                         const weaponIndex = weapons.findIndex(w => w.id === evo.baseWeaponId);
                         if (weaponIndex !== -1) {
                             const oldWeapon = weapons[weaponIndex];
                             const evolved = JSON.parse(JSON.stringify(evo.evolvedWeapon));
-                            evolved.id = evoKey; evolved.level = oldWeapon.level; evolved.count = oldWeapon.count;
+                            evolved.id = evoKey; evolved.level = oldWeapon.level;
                             if (evolved.type === 'aura' || evolved.type === 'evo_orbital_ring') { evolved.lastHit = new Map(); }
                             weapons[weaponIndex] = evolved;
                         }
@@ -468,14 +566,31 @@
         return '#60a5fa'; // Blue 400
     }
 
+    function spawnWatcher() {
+        const side = Math.floor(Math.random() * 4); let x, y;
+        if (side === 0) { x = Math.random() * canvas.width; y = -20; } else if (side === 1) { x = canvas.width + 20; y = Math.random() * canvas.height; } else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 20; } else { x = -20; y = Math.random() * canvas.height; }
+        const hp = 10 * difficultyManager.enemyHpMultiplier;
+        const speed = 1.0 * difficultyManager.enemySpeedMultiplier * RENDER_SCALE;
+        enemies.push({ id: `r-${Date.now()}`, type: 'watcher', x, y, radius: 15 * RENDER_SCALE, hp: hp, maxHp: hp, speed: speed, color: '#805ad5', xpValue: 5 + Math.floor(gameTime / 60), cooldown: 3000, lastAttackTime: Date.now() + Math.random() * 1000 });
+    }
+
     function spawnEnemy() {
         const side = Math.floor(Math.random() * 4); let x, y;
         if (side === 0) { x = Math.random() * canvas.width; y = -20; } else if (side === 1) { x = canvas.width + 20; y = Math.random() * canvas.height; } else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 20; } else { x = -20; y = Math.random() * canvas.height; }
-        const type = Math.random() > 0.8 ? 'fast' : 'normal';
-        const hp = (type==='fast'? 8 : 12) * difficultyManager.enemyHpMultiplier;
-        const speed = (type==='fast'? 2 : 1.2) * difficultyManager.enemySpeedMultiplier * RENDER_SCALE;
-        const xpValue = (type === 'fast' ? 3 : 1) + Math.floor(gameTime / 60);
-        enemies.push({ id: `e-${Date.now()}-${Math.random()}`, type: type, x, y, radius: (type==='fast'?10:15) * RENDER_SCALE, hp: hp, maxHp: hp, speed: speed, color: getEnemyColor(gameTime/60), xpValue: xpValue });
+        
+        if (gameTime > 480 && Math.random() < 0.15) { // After 8 mins, 15% chance for slime
+            const hp = 50 * difficultyManager.enemyHpMultiplier;
+            const speed = 0.8 * difficultyManager.enemySpeedMultiplier * RENDER_SCALE;
+            enemies.push({ id: `t-${Date.now()}`, type: 'tank', x, y, radius: 22 * RENDER_SCALE, hp: hp, maxHp: hp, speed: speed, color: '#48bb78', xpValue: 10 + Math.floor(gameTime / 60) });
+            return;
+        }
+        
+        const type = Math.random() > 0.8 ? 'ghost' : 'normal';
+        const hp = (type==='ghost'? 8 : 12) * difficultyManager.enemyHpMultiplier;
+        const speed = (type==='ghost'? 2 : 1.2) * difficultyManager.enemySpeedMultiplier * RENDER_SCALE;
+        const xpValue = (type === 'ghost' ? 3 : 1) + Math.floor(gameTime / 60);
+        const color = type === 'ghost' ? '#e2e8f0' : getEnemyColor(gameTime/60);
+        enemies.push({ id: `e-${Date.now()}-${Math.random()}`, type: type, x, y, radius: (type==='ghost'?12:15) * RENDER_SCALE, hp: hp, maxHp: hp, speed: speed, color: color, xpValue: xpValue });
     }
 
     function spawnHealthEnemy() {
@@ -496,10 +611,20 @@
 
     function updateEnemies() {
         enemies.forEach(enemy => {
-            const dx = player.x - enemy.x; const dy = player.y - enemy.y; const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist > 0) { enemy.x += (dx / dist) * enemy.speed; enemy.y += (dy / dist) * enemy.speed; }
+            const dx = player.x - enemy.x; const dy = player.y - enemy.y; const dist = Math.hypot(dx, dy);
+            
+            // Watcher enemy behavior
+            if (enemy.type === 'watcher' && dist < 400 * RENDER_SCALE) {
+                 if (Date.now() - enemy.lastAttackTime > enemy.cooldown) {
+                    enemy.lastAttackTime = Date.now();
+                    monsterProjectiles.push({ x: enemy.x, y: enemy.y, vx: (dx / dist) * 4 * RENDER_SCALE, vy: (dy / dist) * 4 * RENDER_SCALE, radius: 5 * RENDER_SCALE, spawnTime: Date.now() });
+                }
+            } else {
+                 if (dist > 0) { enemy.x += (dx / dist) * enemy.speed; enemy.y += (dy / dist) * enemy.speed; }
+            }
+
             if (!player.isInvincible && dist < player.radius + enemy.radius) {
-                const damageTaken = (enemy.isBoss ? 25 : (enemy.isHealthDropper ? 15: 10)) * (1 - player.stats.damageReduction);
+                const damageTaken = (enemy.isBoss ? 25 : (enemy.isHealthDropper ? 15 : (enemy.type === 'tank' ? 20 : 10))) * (1 - player.stats.damageReduction);
                 player.hp -= damageTaken; player.isInvincible = true; player.lastHitTime = Date.now();
                 uiContainer.classList.add('screen-shake');
                 setTimeout(() => uiContainer.classList.remove('screen-shake'), 300);
@@ -516,16 +641,28 @@
             if (w.type === 'orbital') {
                 w.angle = (w.angle + w.speed) % (Math.PI * 2); w.projectiles = []; const angleInc = (2 * Math.PI) / w.count;
                 for (let i = 0; i < w.count; i++) { const angle = w.angle + i * angleInc; w.projectiles.push({ x: player.x + Math.cos(angle) * w.range, y: player.y + Math.sin(angle) * w.range, radius: 10 * RENDER_SCALE, lastHit: new Map() }); }
-            } else if (w.type === 'horizontal' && Date.now() - w.lastAttackTime > cooldown) {
+            } else if (w.type === 'laser_beam' && Date.now() - w.lastAttackTime > cooldown) {
                 w.lastAttackTime = Date.now(); w.projectiles = [];
-                for (let i = 0; i < w.count; i++) { const yOffset = (i - Math.floor((w.count-1)/2)) * 15 * RENDER_SCALE; w.projectiles.push({ x: player.x, y: player.y + yOffset, width: 80 * w.range * RENDER_SCALE, height: 10 * RENDER_SCALE, spawnTime: Date.now(), lastHit: new Map(), side: 'left' }); w.projectiles.push({ x: player.x, y: player.y + yOffset, width: 80 * w.range * RENDER_SCALE, height: 10 * RENDER_SCALE, spawnTime: Date.now(), lastHit: new Map(), side: 'right' }); }
+                let targets = [...enemies].sort((a,b) => Math.hypot(player.x-a.x, player.y-a.y) - Math.hypot(player.x-b.x, player.y-b.y));
+                
+                for (let i = 0; i < w.count && i < targets.length; i++) {
+                    const target = targets[i];
+                    if (target) {
+                        const dx = target.x - player.x;
+                        const dy = target.y - player.y;
+                        const angle = Math.atan2(dy, dx);
+                        const endX = player.x + Math.cos(angle) * w.range;
+                        const endY = player.y + Math.sin(angle) * w.range;
+                        w.projectiles.push({ startX: player.x, startY: player.y, endX: endX, endY: endY, angle: angle, width: (w.isEvolved ? 12 : 8) * RENDER_SCALE, spawnTime: Date.now(), lastHit: new Map() });
+                    }
+                }
             } else if (w.type === 'arc' && Date.now() - w.lastAttackTime > cooldown) {
                  w.lastAttackTime = Date.now();
                  for (let i = 0; i < w.count; i++) w.projectiles.push({ x: player.x, y: player.y, vy: -speed, vx: (i * 2 + (Math.random()-0.5)) * (Math.random() > 0.5 ? 1 : -1) * 2 * RENDER_SCALE, gravity: 0.15 * RENDER_SCALE, angle: 0, rotationSpeed: 0.2 * (Math.random() > 0.5 ? 1 : -1), lastHit: new Map() });
             } else if (w.type === 'homing' && Date.now() - w.lastAttackTime > cooldown) {
                 w.lastAttackTime = Date.now();
                 let targets = [...enemies].sort((a,b) => Math.hypot(player.x-a.x, player.y-a.y) - Math.hypot(player.x-b.x, player.y-b.y));
-                for(let i=0; i < w.count && i < targets.length; i++){ w.projectiles.push({x:player.x, y:player.y, speed: speed, target: targets[i], lastHit: new Map()}); }
+                for(let i=0; i < w.count && i < targets.length; i++){ w.projectiles.push({x:player.x, y:player.y, speed: speed, target: targets[i], lastHit: new Map(), pierceLeft: w.pierce || 1 }); }
             } else if (w.type === 'evo_spiral' && Date.now() - w.lastAttackTime > cooldown) {
                 w.lastAttackTime = Date.now();
                 for (let i = 0; i < w.count; i++) {
@@ -535,37 +672,61 @@
             } else if (w.type === 'evo_stream' && Date.now() - w.lastAttackTime > cooldown) {
                 w.lastAttackTime = Date.now();
                 let target = enemies.sort((a,b) => Math.hypot(player.x-a.x, player.y-a.y) - Math.hypot(player.x-b.x, player.y-b.y))[0];
-                if(target) w.projectiles.push({x:player.x, y:player.y, speed: speed, target: target, lastHit: new Map()});
+                if(target) w.projectiles.push({x:player.x, y:player.y, speed: speed, target: target, lastHit: new Map(), pierceLeft: w.pierce || 5 });
             }
 
-            w.projectiles.forEach((p, index) => {
-                if (w.type === 'horizontal' && Date.now() - p.spawnTime > w.duration) w.projectiles.splice(index, 1);
-                if (w.type === 'arc') { p.vy += p.gravity; p.y += p.vy; p.x += p.vx; p.angle += p.rotationSpeed; if (p.y > canvas.height + 50) w.projectiles.splice(index, 1); }
+            for (let index = w.projectiles.length - 1; index >= 0; index--) {
+                const p = w.projectiles[index];
+                if (w.type === 'laser_beam' && Date.now() - p.spawnTime > w.duration) { w.projectiles.splice(index, 1); continue; }
+                if (w.type === 'arc') { p.vy += p.gravity; p.y += p.vy; p.x += p.vx; p.angle += p.rotationSpeed; if (p.y > canvas.height + 50) { w.projectiles.splice(index, 1); continue; } }
                 if (w.type === 'homing' || w.type === 'evo_stream') {
                     if (p.target && p.target.hp > 0) { const dx = p.target.x - p.x; const dy = p.target.y - p.y; const dist = Math.hypot(dx,dy); if(dist > 0) {p.x += (dx/dist)*p.speed; p.y += (dy/dist)*p.speed;} } else { p.y -= p.speed; }
-                    if (p.y < -20 || p.x < -20 || p.x > canvas.width + 20) w.projectiles.splice(index, 1);
+                    if (p.y < -20 || p.x < -20 || p.x > canvas.width + 20) { w.projectiles.splice(index, 1); continue; }
                 }
-                if (w.type === 'evo_spiral') { p.y += p.vy; p.x += p.vx; p.angle += p.rotationSpeed; if (Date.now() - p.spawnTime > 3000) w.projectiles.splice(index, 1); }
-            });
+                if (w.type === 'evo_spiral') { p.y += p.vy; p.x += p.vx; p.angle += p.rotationSpeed; if (Date.now() - p.spawnTime > 3000) { w.projectiles.splice(index, 1); continue; } }
+            }
         });
     }
     
+    function updateMonsterProjectiles() {
+        for (let i = monsterProjectiles.length - 1; i >= 0; i--) {
+            const p = monsterProjectiles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            if (!player.isInvincible && Math.hypot(p.x - player.x, p.y - player.y) < player.radius + p.radius) {
+                player.hp -= 12 * (1 - player.stats.damageReduction);
+                player.isInvincible = true;
+                player.lastHitTime = Date.now();
+                uiContainer.classList.add('screen-shake');
+                setTimeout(() => uiContainer.classList.remove('screen-shake'), 300);
+                if (player.hp <= 0) gameOver();
+                monsterProjectiles.splice(i, 1);
+                continue;
+            }
+            if (Date.now() - p.spawnTime > 5000 || p.x < 0 || p.x > canvasWidth || p.y < 0 || p.y > canvasHeight) {
+                monsterProjectiles.splice(i, 1);
+            }
+        }
+    }
+
     function updatePickups() {
-        pickups.forEach((pickup, index) => {
-             const dx = player.x - pickup.x; const dy = player.y - pickup.y; const dist = Math.sqrt(dx*dx + dy*dy);
+        for (let index = pickups.length - 1; index >= 0; index--) {
+            const pickup = pickups[index];
+            const dx = player.x - pickup.x; const dy = player.y - pickup.y; const dist = Math.sqrt(dx*dx + dy*dy);
             if (dist < player.radius + pickup.radius) {
                 if (pickup.type === 'health') { player.hp = Math.min(player.maxHp, player.hp + 20); }
                 pickups.splice(index, 1);
             }
-        });
+        }
     }
 
     function updateXPGems() {
-        xpGems.forEach((gem, index) => {
+        for (let index = xpGems.length - 1; index >= 0; index--) {
+            const gem = xpGems[index];
             const dx = player.x - gem.x; const dy = player.y - gem.y; const dist = Math.sqrt(dx*dx + dy*dy);
             if (dist < player.radius + gem.radius) { player.xp += gem.value; checkLevelUp(); xpGems.splice(index, 1); } 
             else if (dist < 100 * RENDER_SCALE) { gem.x += (dx / dist) * 5 * RENDER_SCALE; gem.y += (dy / dist) * 5 * RENDER_SCALE; }
-        });
+        }
     }
     
     function checkCollisions() {
@@ -582,20 +743,43 @@
                     }
                 });
             }
-            w.projectiles.forEach(p => {
+
+            for (let pIndex = w.projectiles.length - 1; pIndex >= 0; pIndex--) {
+                const p = w.projectiles[pIndex];
+                 if (!p) continue;
                 for (let i = enemies.length - 1; i >= 0; i--) {
                     const enemy = enemies[i]; let hit = false;
                     const hitRadius = (w.type === 'arc' || w.type === 'evo_spiral') ? 15 * RENDER_SCALE : 12 * RENDER_SCALE;
                     if (w.type === 'orbital' || w.type === 'homing' || w.type === 'evo_stream' || w.type === 'arc' || w.type === 'evo_spiral') { const d = Math.hypot(p.x - enemy.x, p.y - enemy.y); if (d < hitRadius + enemy.radius) hit = true; }
-                    else if (w.type === 'horizontal') { const rectX = p.side === 'left' ? p.x - p.width - player.radius : p.x + player.radius; if (enemy.x > Math.min(rectX, rectX+p.width) && enemy.x < Math.max(rectX, rectX+p.width) && enemy.y > p.y - p.height / 2 && enemy.y < p.y + p.height / 2) hit = true; }
+                    else if (w.type === 'laser_beam') {
+                        const dx = p.endX - p.startX; const dy = p.endY - p.startY; const len = Math.hypot(dx, dy);
+                        if (len > 0) {
+                            const dot = (((enemy.x - p.startX) * dx) + ((enemy.y - p.startY) * dy)) / (len * len);
+                            const closestX = p.startX + dot * dx;
+                            const closestY = p.startY + dot * dy;
+                             if (dot >= 0 && dot <= 1) { // Check if closest point is on the segment
+                                if (Math.hypot(enemy.x - closestX, enemy.y - closestY) < enemy.radius + p.width / 2) hit = true;
+                            }
+                        }
+                    }
                     
                     if (hit && (!p.lastHit.has(enemy.id) || Date.now() - p.lastHit.get(enemy.id) > 500)) {
                         p.lastHit.set(enemy.id, Date.now()); enemy.hp -= damage; createDamageNumber(enemy.x, enemy.y, damage);
                         if (w.lifestealChance && Math.random() < w.lifestealChance) { player.hp = Math.min(player.maxHp, player.hp + 1); }
+                        
+                        if (w.type === 'homing' || w.type === 'evo_stream') {
+                            if (p.pierceLeft > 1) {
+                                p.pierceLeft--;
+                            } else {
+                                w.projectiles.splice(pIndex, 1);
+                                break; 
+                            }
+                        }
                     }
                 }
-            });
+            }
         });
+
         for (let i = enemies.length - 1; i >= 0; i--) {
             const enemy = enemies[i];
             if (enemy.hp <= 0) {
@@ -669,25 +853,76 @@
         ctx.beginPath();
         ctx.ellipse(0, e.radius, e.radius * 0.9, e.radius * 0.4, 0, 0, Math.PI * 2);
         ctx.fill();
-        const wingFlap = Math.sin(Date.now() / 100) * (e.radius * 0.3);
-        ctx.fillStyle = e.color;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, e.radius * 0.7, e.radius, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(0, -e.radius * 0.5);
-        ctx.quadraticCurveTo(-e.radius * 1.5, -e.radius * 0.5 + wingFlap, -e.radius * 0.8, e.radius * 0.5);
-        ctx.quadraticCurveTo(-e.radius * 0.5, e.radius * 0.2, 0, -e.radius * 0.5);
-        ctx.moveTo(0, -e.radius * 0.5);
-        ctx.quadraticCurveTo(e.radius * 1.5, -e.radius * 0.5 + wingFlap, e.radius * 0.8, e.radius * 0.5);
-        ctx.quadraticCurveTo(e.radius * 0.5, e.radius * 0.2, 0, -e.radius * 0.5);
-        ctx.fill();
-        ctx.fillStyle = e.isHealthDropper ? '#ef4444' : 'white';
-        ctx.beginPath();
-        ctx.arc(-e.radius * 0.2, -e.radius * 0.1, 2 * RENDER_SCALE, 0, Math.PI * 2);
-        ctx.arc(e.radius * 0.2, -e.radius * 0.1, 2 * RENDER_SCALE, 0, Math.PI * 2);
-        ctx.fill();
 
+        if (e.type === 'tank') {
+            const bodyWobble = Math.sin(Date.now() / 200) * (e.radius * 0.05);
+            ctx.fillStyle = e.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, e.radius + bodyWobble, e.radius - bodyWobble, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.ellipse(-e.radius * 0.3, -e.radius * 0.3, e.radius * 0.3, e.radius * 0.2, -Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (e.type === 'ghost') {
+            const bob = Math.sin(Date.now() / 150) * (e.radius * 0.1);
+            ctx.fillStyle = e.color;
+            ctx.globalAlpha = 0.85;
+            ctx.beginPath();
+            ctx.arc(0, bob, e.radius, Math.PI, 0);
+            ctx.rect(-e.radius, bob, e.radius * 2, e.radius);
+            const waveCount = 4;
+            for (let i = 0; i < waveCount; i++) {
+                const startX = -e.radius + (e.radius * 2 * i / waveCount);
+                const endX = -e.radius + (e.radius * 2 * (i + 1) / waveCount);
+                const controlX = (startX + endX) / 2;
+                const controlY = e.radius + bob + (i % 2 === 0 ? e.radius * 0.3 : -e.radius * 0.3);
+                if (i === 0) { ctx.lineTo(startX, e.radius + bob); }
+                ctx.quadraticCurveTo(controlX, controlY, endX, e.radius + bob);
+            }
+            ctx.lineTo(e.radius, bob);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        } else { // Bat / Watcher
+            const wingFlap = Math.sin(Date.now() / 100) * (e.radius * 0.3);
+            ctx.fillStyle = e.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, e.radius * 0.7, e.radius, 0, 0, Math.PI * 2); // Body
+            ctx.fill();
+            if (e.type !== 'watcher') { // Wings for bats
+                ctx.beginPath();
+                ctx.moveTo(0, -e.radius * 0.5);
+                ctx.quadraticCurveTo(-e.radius * 1.5, -e.radius * 0.5 + wingFlap, -e.radius * 0.8, e.radius * 0.5);
+                ctx.quadraticCurveTo(-e.radius * 0.5, e.radius * 0.2, 0, -e.radius * 0.5);
+                ctx.moveTo(0, -e.radius * 0.5);
+                ctx.quadraticCurveTo(e.radius * 1.5, -e.radius * 0.5 + wingFlap, e.radius * 0.8, e.radius * 0.5);
+                ctx.quadraticCurveTo(e.radius * 0.5, e.radius * 0.2, 0, -e.radius * 0.5);
+                ctx.fill();
+            }
+        }
+        
+        let eyeColor = e.isHealthDropper ? '#ef4444' : 'white';
+        if (e.type === 'watcher') eyeColor = '#ECC94B';
+        if (e.type === 'tank') eyeColor = 'black';
+        if (e.type !== 'ghost') {
+            ctx.fillStyle = eyeColor;
+            ctx.beginPath();
+            const eyeRadius = e.type === 'watcher' ? e.radius * 0.4 : 2 * RENDER_SCALE;
+            const eyeY = e.type === 'watcher' ? 0 : -e.radius * 0.1;
+            const eyeXOffset = e.type === 'watcher' ? 0 : e.radius * 0.2;
+            ctx.arc(-eyeXOffset, eyeY, eyeRadius, 0, Math.PI * 2);
+            if (e.type !== 'watcher') {
+                ctx.arc(eyeXOffset, eyeY, eyeRadius, 0, Math.PI * 2);
+            }
+            ctx.fill();
+            if (e.type === 'watcher') {
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(0, 0, eyeRadius * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+       
         if (e.isBoss) { ctx.fillStyle = 'yellow'; ctx.font = `${20 * RENDER_SCALE}px Kanit`; ctx.textAlign = 'center'; ctx.fillText('👑', 0, -e.radius - 10); }
         if (e.isHealthDropper) { ctx.fillStyle = 'white'; ctx.font = `bold ${14 * RENDER_SCALE}px Kanit`; ctx.textAlign = 'center'; ctx.fillText('❤️', 0, e.radius * 0.4); }
         if (e.hp < e.maxHp) {
@@ -696,6 +931,20 @@
         }
         ctx.restore();
     }
+    
+    function drawMonsterProjectiles() {
+        monsterProjectiles.forEach(p => {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.fillStyle = '#f56565';
+            ctx.shadowColor = '#c53030';
+            ctx.shadowBlur = 8 * RENDER_SCALE;
+            ctx.beginPath();
+            ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+    }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -703,31 +952,106 @@
         xpGems.forEach(g => { ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(Math.PI / 4); ctx.fillStyle = g.color; ctx.fillRect(-g.radius, -g.radius, g.radius*2, g.radius*2); ctx.restore(); });
         pickups.forEach(p => { if (p.type === 'health') { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(p.x, p.y - 3*RENDER_SCALE); ctx.bezierCurveTo(p.x, p.y - 7*RENDER_SCALE, p.x - 6*RENDER_SCALE, p.y - 7*RENDER_SCALE, p.x - 6*RENDER_SCALE, p.y); ctx.bezierCurveTo(p.x - 6*RENDER_SCALE, p.y + 5*RENDER_SCALE, p.x, p.y + 9*RENDER_SCALE, p.x, p.y + 12*RENDER_SCALE); ctx.bezierCurveTo(p.x, p.y + 9*RENDER_SCALE, p.x + 6*RENDER_SCALE, p.y + 5*RENDER_SCALE, p.x + 6*RENDER_SCALE, p.y); ctx.bezierCurveTo(p.x + 6*RENDER_SCALE, p.y - 7*RENDER_SCALE, p.x, p.y - 7*RENDER_SCALE, p.x, p.y - 3*RENDER_SCALE); ctx.fill(); }});
         enemies.forEach(e => drawEnemy(e));
+        drawMonsterProjectiles();
         
         weapons.forEach(w => {
             if (w.type === 'aura') { const auraTime = Date.now() / 200; const radius = w.range * (0.95 + Math.sin(auraTime * 0.5) * 0.05); const isEvolved = w.id === 'soul_eater'; let gradient = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, radius); if (isEvolved) { gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); gradient.addColorStop(0.7, 'rgba(6, 95, 70, 0.2)'); gradient.addColorStop(1, 'rgba(5, 46, 22, 0)'); } else { gradient.addColorStop(0, 'rgba(253, 224, 71, 0.3)'); gradient.addColorStop(0.7, 'rgba(250, 204, 21, 0.1)'); gradient.addColorStop(1, 'rgba(252, 165, 165, 0)'); } ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(player.x, player.y, radius, 0, Math.PI*2); ctx.fill(); }
-             if (w.type === 'evo_orbital_ring') { const ringTime = Date.now(); const alpha = 0.6 + Math.sin(ringTime/150) * 0.3; ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`; ctx.lineWidth = 15 * RENDER_SCALE; ctx.shadowColor = '#a78bfa'; ctx.shadowBlur = 20 * RENDER_SCALE; ctx.beginPath(); ctx.arc(player.x, player.y, w.range, 0, Math.PI*2); ctx.stroke(); if (Math.random() > 0.9) { ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2 * RENDER_SCALE; for (let i = 0; i < 3; i++) { const startAngle = Math.random() * Math.PI * 2; const endAngle = startAngle + (Math.random() - 0.5) * Math.PI; ctx.beginPath(); ctx.moveTo(player.x + Math.cos(startAngle) * w.range, player.y + Math.sin(startAngle) * w.range); ctx.lineTo(player.x + Math.cos(endAngle) * (w.range * 0.8), player.y + Math.sin(endAngle) * (w.range * 0.8)); ctx.stroke(); } } ctx.shadowBlur=0; }
+            if (w.type === 'evo_orbital_ring') {
+                const ringTime = Date.now();
+                const alpha = 0.6 + Math.sin(ringTime / 150) * 0.3;
+                ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
+                ctx.lineWidth = 15 * RENDER_SCALE;
+                ctx.shadowColor = '#a78bfa';
+                ctx.shadowBlur = 20 * RENDER_SCALE;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, w.range, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Rotating lightning arcs
+                const baseAngle = (ringTime / 1500) * Math.PI * 2; // One full rotation every 1.5 seconds
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.lineWidth = 3 * RENDER_SCALE;
+                for (let i = 0; i < 5; i++) {
+                    const arcAngle = baseAngle + (i / 5) * Math.PI * 2;
+                    const startAngle = arcAngle - 0.3;
+                    const endAngle = arcAngle + 0.3;
+                    ctx.beginPath();
+                    ctx.arc(player.x, player.y, w.range, startAngle, endAngle);
+                    ctx.stroke();
+                }
+                ctx.shadowBlur = 0;
+            }
+            
             w.projectiles.forEach(p => {
-                ctx.save(); ctx.translate(p.x, p.y);
+                ctx.save();
+                if (w.type === 'laser_beam') {
+                    const life = (Date.now() - p.spawnTime) / w.duration;
+                    const alpha = life < 0.5 ? (life * 2) : (1 - (life - 0.5) * 2);
+                    ctx.globalAlpha = alpha;
+                    const isEvolved = w.isEvolved;
+                    ctx.lineWidth = p.width; ctx.lineCap = 'round'; ctx.shadowBlur = 15 * RENDER_SCALE;
+                    const gradient = ctx.createLinearGradient(p.startX, p.startY, p.endX, p.endY);
+                    if(isEvolved) {
+                        ctx.shadowColor = '#fef08a';
+                        gradient.addColorStop(0, "rgba(253, 230, 138, 0)"); gradient.addColorStop(0.5, "#fde047"); gradient.addColorStop(1, "rgba(253, 230, 138, 0)");
+                    } else {
+                        ctx.shadowColor = '#f87171';
+                        gradient.addColorStop(0, "rgba(239, 68, 68, 0)"); gradient.addColorStop(0.5, "#ef4444"); gradient.addColorStop(1, "rgba(239, 68, 68, 0)");
+                    }
+                    ctx.strokeStyle = gradient;
+                    ctx.beginPath(); ctx.moveTo(p.startX, p.startY); ctx.lineTo(p.endX, p.endY); ctx.stroke();
+                } else {
+                    ctx.translate(p.x, p.y);
+                }
+                
                 if (w.type === 'orbital') { ctx.shadowColor = '#00BFFF'; ctx.shadowBlur = 15 * RENDER_SCALE; const gradient = ctx.createRadialGradient(0, 0, 2*RENDER_SCALE, 0, 0, 12*RENDER_SCALE); gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); gradient.addColorStop(0.4, 'rgba(173, 216, 230, 0.8)'); gradient.addColorStop(1, 'rgba(0, 191, 255, 0)'); ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(0, 0, 12 * RENDER_SCALE, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2 * RENDER_SCALE; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(0, 0); const angle = Math.random() * Math.PI * 2; const length = (10 + Math.random() * 5) * RENDER_SCALE; ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length); ctx.stroke(); } ctx.shadowBlur = 0; }
-                else if (w.type === 'horizontal') { const life = (Date.now() - p.spawnTime) / w.duration; const alpha = Math.sin(life * Math.PI); ctx.globalAlpha = alpha; const isEvolved = w.id === 'bloody_tear'; ctx.strokeStyle = isEvolved ? '#f56565' : '#E2E8F0'; ctx.lineWidth = (isEvolved ? 7 : 5) * RENDER_SCALE; ctx.shadowColor = isEvolved ? '#c53030' : '#E2E8F0'; ctx.shadowBlur = 7 * RENDER_SCALE; ctx.beginPath(); const xStart = p.side === 'left' ? -player.radius : player.radius; const xEnd = p.side === 'left' ? -(p.width + player.radius) : (p.width + player.radius); const yControl = (p.side === 'left' ? 1 : -1) * p.height * 2.5; ctx.moveTo(xStart, 0); ctx.quadraticCurveTo((xStart + xEnd) / 2.5, yControl, xEnd, 0); ctx.stroke(); ctx.globalAlpha = 1; ctx.shadowBlur = 0; }
                 else if (w.type === 'arc' || w.type === 'evo_spiral') { ctx.rotate(p.angle); const s = RENDER_SCALE; ctx.fillStyle = '#8B4513'; ctx.fillRect(-4*s, -20*s, 8*s, 40*s); ctx.beginPath(); ctx.moveTo(0, -22*s); ctx.lineTo(18*s, -15*s); ctx.lineTo(18*s, 15*s); ctx.lineTo(0, 22*s); ctx.lineTo(-18*s, 15*s); ctx.lineTo(-18*s, -15*s); ctx.closePath(); const gradient = ctx.createLinearGradient(-18*s, 0, 18*s, 0); gradient.addColorStop(0, '#A0AEC0'); gradient.addColorStop(0.5, '#E2E8F0'); gradient.addColorStop(1, '#A0AEC0'); ctx.fillStyle = gradient; ctx.fill(); ctx.strokeStyle = '#4A5568'; ctx.lineWidth = 2*s; ctx.stroke(); }
-                else if (w.type === 'homing' || w.type === 'evo_stream') { const isEvolved = w.id === 'thousand_edge'; ctx.fillStyle = isEvolved ? '#fef08a' : '#a78bfa'; ctx.beginPath(); const s = RENDER_SCALE; ctx.moveTo(0, -8*s); ctx.lineTo(5*s, 8*s); ctx.lineTo(-5*s, 8*s); ctx.closePath(); ctx.fill(); ctx.shadowColor = isEvolved ? '#fde047' : '#c4b5fd'; ctx.shadowBlur = 8*s; }
+                else if (w.type === 'homing' || w.type === 'evo_stream') {
+                    const isEvolved = w.id === 'thousand_edge';
+                    const s = RENDER_SCALE;
+                    const angle = p.target && p.target.hp > 0 ? Math.atan2(p.target.y - p.y, p.target.x - p.x) + Math.PI / 2 : (p.angle || 0);
+                    p.angle = angle;
+                    ctx.rotate(angle);
+                    ctx.shadowBlur = 10 * s;
+
+                    if (isEvolved) {
+                        ctx.shadowColor = '#fde047';
+                        let grad = ctx.createLinearGradient(0, -12 * s, 0, 8 * s);
+                        grad.addColorStop(0, '#fef9c3'); grad.addColorStop(1, '#facc15');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.moveTo(0, -12 * s); ctx.lineTo(5 * s, 8 * s); ctx.lineTo(-5 * s, 8 * s);
+                        ctx.closePath(); ctx.fill();
+                    } else {
+                        ctx.shadowColor = '#c4b5fd';
+                        let grad = ctx.createRadialGradient(0, 0, 1 * s, 0, 0, 6 * s);
+                        grad.addColorStop(0, '#fff'); grad.addColorStop(0.4, '#ddd6fe'); grad.addColorStop(1, 'rgba(167, 139, 250, 0)');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath(); ctx.arc(0, 0, 6 * s, 0, Math.PI * 2); ctx.fill();
+                        ctx.fillStyle = 'rgba(196, 181, 253, 0.5)';
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0); ctx.lineTo(4 * s, 12 * s); ctx.lineTo(-4 * s, 12 * s);
+                        ctx.closePath(); ctx.fill();
+                    }
+                }
                 ctx.restore();
             });
         });
-        healthBar.style.width = `${(player.hp/player.maxHp)*100}%`; healthText.textContent = `${Math.ceil(player.hp)}/${player.maxHp}`;
-        xpBar.style.width = `${(player.xp/player.xpToNextLevel)*100}%`; levelText.textContent = `เลเวล: ${player.level}`;
+        healthBar.style.width = `${(player.hp/player.maxHp)*100}%`; 
+        healthText.textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+        xpBar.style.width = `${(player.xp/player.xpToNextLevel)*100}%`; 
+        levelText.textContent = `เลเวล: ${player.level}`;
         const min = Math.floor(gameTime/60).toString().padStart(2,'0'); const sec = (gameTime%60).toString().padStart(2,'0');
         timerText.textContent = `เวลา: ${min}:${sec}`;
     }
 
     // --- Game Loop and State ---
-    let lastTime = 0, spawnTimer = 0, gameClockTimer = 0, healthSpawnTimer = 0;
+    let lastTime = 0, spawnTimer = 0, gameClockTimer = 0, healthSpawnTimer = 0, watcherSpawnTimer = 0;
     function gameLoop(timestamp) {
         if (gameState !== 'playing') return;
         const deltaTime = (timestamp - lastTime) / 1000; lastTime = timestamp;
-        spawnTimer += deltaTime; gameClockTimer += deltaTime; healthSpawnTimer += deltaTime;
+        spawnTimer += deltaTime; gameClockTimer += deltaTime; healthSpawnTimer += deltaTime; watcherSpawnTimer += deltaTime;
+
         if (gameClockTimer >= 1) { gameTime++; gameClockTimer = 0; }
         
         const RAMP_UP_DURATION = 360; // 6 minutes
@@ -751,6 +1075,10 @@
 
         if (healthSpawnTimer > 30) { spawnHealthEnemy(); healthSpawnTimer = 0; }
         if (gameTime >= nextBossTime) { spawnBoss(); nextBossTime += 300; }
+        if (gameTime > 360 && watcherSpawnTimer > 20) {
+             for(let i=0; i<3; i++) spawnWatcher();
+             watcherSpawnTimer = 0;
+        }
         
         const spawnRate = Math.max(0.08, 0.5 * currentSpawnRateMultiplier);
         if (spawnTimer > spawnRate) { 
@@ -758,7 +1086,7 @@
             for(let i=0; i<waveSize; i++) spawnEnemy(); 
             spawnTimer = 0; 
         }
-        updatePlayer(); updateEnemies(); updateWeapons(); updateXPGems(); updatePickups(); checkCollisions(); draw();
+        updatePlayer(); updateEnemies(); updateMonsterProjectiles(); updateWeapons(); updateXPGems(); updatePickups(); checkCollisions(); draw();
         animationFrameId = requestAnimationFrame(gameLoop);
     }
     
@@ -768,8 +1096,8 @@
         player.x = canvas.width / 2; player.y = canvas.height / 2;
         player.passives = [];
         player.stats = { speed: 3 * RENDER_SCALE, damageModifier: 1.0, cooldownModifier: 1.0, projectileSpeedModifier: 1.0, damageReduction: 0 };
-        weapons = []; enemies = []; xpGems = []; pickups = [];
-        gameTime = 0; enemiesKilledCount = 0; spawnTimer = 0; gameClockTimer = 0; healthSpawnTimer = 0; nextBossTime = 300;
+        weapons = []; enemies = []; xpGems = []; pickups = []; monsterProjectiles = [];
+        gameTime = 0; enemiesKilledCount = 0; spawnTimer = 0; gameClockTimer = 0; healthSpawnTimer = 0; watcherSpawnTimer = 0; nextBossTime = 300;
         difficultyManager = { enemyHpMultiplier: 1.0, enemySpeedMultiplier: 1.0 };
         updateInventoryUI();
     }
@@ -783,7 +1111,6 @@
         weaponInstance.id = weaponId; weaponInstance.level = 1; weapons.push(weaponInstance);
         startScreen.classList.add('hidden');
         gameOverScreen.classList.add('hidden'); gameOverScreen.classList.remove('flex');
-        updateInventoryUI();
         gameState = 'playing'; lastTime = performance.now(); gameLoop(lastTime);
     }
 
@@ -795,10 +1122,62 @@
         gameOverScreen.classList.remove('hidden'); gameOverScreen.classList.add('flex');
     }
 
+    // Menu Navigation
+    menuStartButton.addEventListener('click', () => {
+        mainMenuScreen.classList.add('hidden');
+        startScreen.classList.remove('hidden');
+        startScreen.classList.add('flex');
+    });
+
+    menuGuideButton.addEventListener('click', () => {
+        guideReturnState = 'menu';
+        mainMenuScreen.classList.add('hidden');
+        guideScreen.classList.remove('hidden');
+        guideScreen.classList.add('flex');
+        populateEvoGuide();
+    });
+    
+    pauseButton.addEventListener('click', () => {
+        if(gameState === 'playing') {
+            gameState = 'paused';
+            cancelAnimationFrame(animationFrameId);
+            pauseScreen.classList.remove('hidden');
+            pauseScreen.classList.add('flex');
+        }
+    });
+
+    resumeButton.addEventListener('click', () => {
+        pauseScreen.classList.add('hidden');
+        pauseScreen.classList.remove('flex');
+        gameState = 'playing';
+        lastTime = performance.now();
+        gameLoop(lastTime);
+    });
+    
+    pauseGuideButton.addEventListener('click', () => {
+        guideReturnState = 'pause';
+        pauseScreen.classList.add('hidden');
+        pauseScreen.classList.remove('flex');
+        guideScreen.classList.remove('hidden');
+        guideScreen.classList.add('flex');
+        populateEvoGuide();
+    });
+
+    guideBackButton.addEventListener('click', () => {
+        guideScreen.classList.add('hidden');
+        guideScreen.classList.remove('flex');
+        if (guideReturnState === 'pause') {
+            pauseScreen.classList.remove('hidden');
+            pauseScreen.classList.add('flex');
+        } else {
+            mainMenuScreen.classList.remove('hidden');
+        }
+    });
+
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', () => {
         gameOverScreen.classList.add('hidden'); gameOverScreen.classList.remove('flex');
-        startScreen.classList.remove('hidden'); populateCharacterSelection();
+        mainMenuScreen.classList.remove('hidden');
         startButton.disabled = true;
         document.querySelectorAll('#characterSelection .card').forEach(c => c.classList.remove('selected'));
     });
